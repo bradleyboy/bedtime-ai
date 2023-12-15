@@ -1,0 +1,29 @@
+{
+  "name": "deno-node-testbed",
+  "private": true,
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.21",
+    "prettier-plugin-tailwindcss": "^0.2.5",
+    "tailwindcss": "^3.3.0",
+    "@types/react": "^18.0.9",
+    "typescript": "^5.2.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "nokkio:ci": "tsc"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "nokkio": {
+    "id": "2ZdbUsho0QOFtHlBB87hOfYDqTc",
+    "version": "v0.0.0-unstable-939b67c5"
+  }
+}
