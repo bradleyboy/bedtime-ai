@@ -2,7 +2,7 @@ import type { PageDataArgs, PageMetadataFunction } from '@nokkio/router';
 import { usePageData } from '@nokkio/router';
 import { Story } from '@nokkio/magic';
 import { useEffect, useRef, useState } from 'react';
-import { Img } from '@nokkio/image';
+import { Img, createImageURL } from '@nokkio/image';
 
 type PageParams = { id: string };
 
@@ -16,7 +16,14 @@ export const getPageMetadata: PageMetadataFunction<typeof getPageData> = ({
   if (!pageData) {
     return { title: 'Not found', http: { status: 404 } };
   }
-  return { title: `Tonight's Bedtime Story: ${pageData.title}` };
+
+  return {
+    title: `Tonight's Bedtime Story: ${pageData.title}`,
+    openGraph: {
+      image: createImageURL(pageData.image!),
+      audio: pageData.audio!,
+    },
+  };
 };
 
 function PlayIcon() {
