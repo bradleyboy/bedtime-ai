@@ -87,6 +87,16 @@ function AudioPlayer({ src }: { src: string }) {
     ref.current?.addEventListener('loadedmetadata', () => {
       setDuration(ref.current?.duration);
     });
+
+    const spaceHandler = (e: KeyboardEvent) => {
+      if (e.key === ' ') {
+        handleTogglePlayback();
+      }
+    };
+
+    window.addEventListener('keydown', spaceHandler);
+
+    return () => window.removeEventListener('keydown', spaceHandler);
   }, []);
 
   function handleTogglePlayback() {
