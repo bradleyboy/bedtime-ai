@@ -1,6 +1,3 @@
-import type { PageDataArgs, PageMetadataFunction } from '@nokkio/router';
-import { usePageData, Link } from '@nokkio/router';
-import { Story } from '@nokkio/magic';
 import {
   useEffect,
   useRef,
@@ -8,7 +5,13 @@ import {
   forwardRef,
   useImperativeHandle,
 } from 'react';
+
+import type { PageDataArgs, PageMetadataFunction } from '@nokkio/router';
+import { usePageData, Link } from '@nokkio/router';
+import { Story } from '@nokkio/magic';
 import { Img, createImageURL } from '@nokkio/image';
+
+import Spinner from 'components/Spinner';
 
 type PageParams = { id: string };
 
@@ -182,6 +185,7 @@ const AudioPlayer = forwardRef<HTMLAudioElement, { story: Story }>(
 export default function () {
   const story = usePageData<typeof getPageData>();
   const ref = useRef<HTMLAudioElement>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   if (!story) {
     return <p>Not found</p>;
@@ -198,8 +202,14 @@ export default function () {
       </h1>
 
       <div className="flex flex-1 flex-col">
-        <div className="flex-1 flex justify-center bg-gray-900">
+        <div className="relative flex-1 flex justify-center bg-gray-900">
+          {!imageLoaded && (
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+              <Spinner />
+            </div>
+          )}
           <Img
+            onLoad={() => setImageLoaded(true)}
             onClick={() => handleTogglePlayback(ref.current)}
             image={story.image}
             className="h-0 min-h-full object-contain"
