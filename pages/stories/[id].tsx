@@ -153,7 +153,7 @@ const AudioPlayer = forwardRef<HTMLAudioElement, { src: string }>(
         <div className={`mt-5 w-full bg-gray-700 h-2`}>
           <div
             style={{ width: `${p}%` }}
-            className="transition-all bg-gray-400 h-full"
+            className="transition-all ease-linear bg-gray-400 h-full"
           ></div>
         </div>
       </div>
