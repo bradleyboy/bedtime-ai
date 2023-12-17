@@ -89,8 +89,18 @@ function AudioPlayer({ src }: { src: string }) {
     });
 
     const spaceHandler = (e: KeyboardEvent) => {
-      if (e.key === ' ') {
-        handleTogglePlayback();
+      if (ref.current) {
+        if (e.key === ' ') {
+          handleTogglePlayback();
+        }
+
+        if (e.key === 'ArrowLeft') {
+          ref.current.currentTime -= 10;
+        }
+
+        if (e.key === 'ArrowRight') {
+          ref.current.currentTime += 10;
+        }
       }
     };
 
