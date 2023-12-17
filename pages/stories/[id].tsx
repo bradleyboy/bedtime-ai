@@ -1,7 +1,14 @@
 import type { PageDataArgs, PageMetadataFunction } from '@nokkio/router';
-import { usePageData } from '@nokkio/router';
+import { usePageData, Link } from '@nokkio/router';
 import { Story } from '@nokkio/magic';
-import { useEffect, useRef, useState } from 'react';
+import {
+  Ref,
+  useEffect,
+  useRef,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+} from 'react';
 import { Img, createImageURL } from '@nokkio/image';
 
 type PageParams = { id: string };
@@ -68,105 +75,132 @@ function secondsToHumanReadable(input: number) {
   return `${m}:${s < 10 ? `0${s}` : s}`;
 }
 
-function AudioPlayer({ src }: { src: string }) {
-  const ref = useRef<HTMLAudioElement>(null);
-  const [duration, setDuration] = useState<number | undefined>(
-    ref.current?.duration,
-  );
-  const [currentTime, setCurrentTime] = useState<number>(0);
-
-  const p = duration === undefined ? 0 : (currentTime / duration) * 100;
-
-  useEffect(() => {
-    setDuration(ref.current?.duration);
-
-    ref.current?.addEventListener('timeupdate', () => {
-      setCurrentTime(ref.current?.currentTime!);
-    });
-
-    ref.current?.addEventListener('loadedmetadata', () => {
-      setDuration(ref.current?.duration);
-    });
-
-    const spaceHandler = (e: KeyboardEvent) => {
-      if (ref.current) {
-        if (e.key === ' ') {
-          handleTogglePlayback();
-        }
-
-        if (e.key === 'ArrowLeft') {
-          ref.current.currentTime -= 10;
-        }
-
-        if (e.key === 'ArrowRight') {
-          ref.current.currentTime += 10;
-        }
-      }
-    };
-
-    window.addEventListener('keydown', spaceHandler);
-
-    return () => window.removeEventListener('keydown', spaceHandler);
-  }, []);
-
-  function handleTogglePlayback() {
-    if (ref.current?.paused) {
-      ref.current?.play();
-    } else {
-      ref.current?.pause();
-    }
+function handleTogglePlayback(audio: HTMLAudioElement | null) {
+  if (audio === null) {
+    return;
   }
 
-  return (
-    <div>
-      <div className="px-6 pt-6 text-gray-50 flex items-center justify-between">
-        <div onClick={handleTogglePlayback} className="cursor-pointer">
-          {ref.current?.paused && <PlayIcon />}
-          {!ref.current?.paused && <PauseIcon />}
-        </div>
-        <div className="font-mono text-sm">
-          {secondsToHumanReadable(currentTime)} /{' '}
-          {duration && secondsToHumanReadable(duration)}
-        </div>
-        <audio ref={ref}>
-          <source src={src} type="audio/mpeg" />
-        </audio>
-      </div>
-
-      <div className={`mt-5 w-full bg-gray-700 h-2`}>
-        <div
-          style={{ width: `${p}%` }}
-          className="transition-all bg-gray-400 h-full"
-        ></div>
-      </div>
-    </div>
-  );
+  if (audio.paused) {
+    audio.play();
+  } else {
+    audio.pause();
+  }
 }
+
+const AudioPlayer = forwardRef<HTMLAudioElement, { src: string }>(
+  function AudioPlayer({ src }, forwardedRef) {
+    const ref = useRef<HTMLAudioElement>(null);
+
+    useImperativeHandle(forwardedRef, () => ref.current as HTMLAudioElement);
+
+    const [duration, setDuration] = useState<number | undefined>(
+      ref.current?.duration,
+    );
+    const [currentTime, setCurrentTime] = useState<number>(0);
+
+    const p = duration === undefined ? 0 : (currentTime / duration) * 100;
+
+    useEffect(() => {
+      setDuration(ref.current?.duration);
+
+      ref.current?.addEventListener('timeupdate', () => {
+        setCurrentTime(ref.current?.currentTime!);
+      });
+
+      ref.current?.addEventListener('loadedmetadata', () => {
+        setDuration(ref.current?.duration);
+      });
+
+      const spaceHandler = (e: KeyboardEvent) => {
+        if (ref.current) {
+          if (e.key === ' ') {
+            handleTogglePlayback(ref.current);
+          }
+
+          if (e.key === 'ArrowLeft') {
+            ref.current.currentTime -= 10;
+          }
+
+          if (e.key === 'ArrowRight') {
+            ref.current.currentTime += 10;
+          }
+        }
+      };
+
+      window.addEventListener('keydown', spaceHandler);
+
+      return () => window.removeEventListener('keydown', spaceHandler);
+    }, []);
+
+    return (
+      <div>
+        <div className="px-6 md:px-12 pt-6 text-gray-50 flex items-center justify-between">
+          <div
+            onClick={() => handleTogglePlayback(ref.current)}
+            className="cursor-pointer"
+          >
+            {ref.current?.paused && <PlayIcon />}
+            {!ref.current?.paused && <PauseIcon />}
+          </div>
+          <div className="font-mono text-sm">
+            {secondsToHumanReadable(currentTime)} /{' '}
+            {duration && secondsToHumanReadable(duration)}
+          </div>
+          <audio ref={ref}>
+            <source src={src} type="audio/mpeg" />
+          </audio>
+        </div>
+
+        <div className={`mt-5 w-full bg-gray-700 h-2`}>
+          <div
+            style={{ width: `${p}%` }}
+            className="transition-all bg-gray-400 h-full"
+          ></div>
+        </div>
+      </div>
+    );
+  },
+);
 
 export default function () {
   const story = usePageData<typeof getPageData>();
+  const ref = useRef<HTMLAudioElement>(null);
 
   if (!story) {
     return <p>Not found</p>;
   }
 
+  if (!story.audio) {
+    return null;
+  }
+
   return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="bg-gray-800 max-w-xl md:max-w-2xl flex flex-col rounded-md overflow-hidden mx-3">
-        <div className="pt-6 px-6 space-y-6">
-          <h1 className="text-2xl font-bold text-gray-50">{story.title}</h1>
-          {story.image !== null && (
-            <div className="flex-1">
-              <Img image={story.image} className="rounded-md" />
-            </div>
-          )}
-        </div>
-        {story.audio !== null && (
-          <div>
-            <AudioPlayer src={story.audio} />
-          </div>
-        )}
+    <>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl md:text-6xl font-bold px-6 md:px-12">
+          {story.title}
+        </h1>
+
+        <Link
+          to="/"
+          className="text-gray-300 mr-6 md:mr-12 px-3 py-1 md:px-6 md:py-3 border border-gray-500 rounded-lg hover:border-gray-300 hover:text-gray-200 transition-colors"
+        >
+          <span className="hidden md:inline">Create your own story</span>
+          <span className="md:hidden">+</span>
+        </Link>
       </div>
-    </div>
+      <div className="flex flex-1 flex-col">
+        <div className="flex-1 flex justify-center bg-gray-900">
+          <Img
+            onClick={() => handleTogglePlayback(ref.current)}
+            image={story.image}
+            className="h-0 min-h-full object-contain"
+          />
+        </div>
+        <div>
+          <AudioPlayer ref={ref} src={story.audio} />
+        </div>
+      </div>
+    </>
   );
 }
