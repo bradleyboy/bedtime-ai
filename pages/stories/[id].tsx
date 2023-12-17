@@ -2,7 +2,6 @@ import type { PageDataArgs, PageMetadataFunction } from '@nokkio/router';
 import { usePageData, Link } from '@nokkio/router';
 import { Story } from '@nokkio/magic';
 import {
-  Ref,
   useEffect,
   useRef,
   useState,
@@ -25,7 +24,7 @@ export const getPageMetadata: PageMetadataFunction<typeof getPageData> = ({
   }
 
   return {
-    title: `Tonight's Bedtime Story: ${pageData.title}`,
+    title: `${pageData.title} - Tonight's Bedtime Story`,
     openGraph: {
       image: createImageURL(pageData.image!),
       audio: pageData.audio!,
