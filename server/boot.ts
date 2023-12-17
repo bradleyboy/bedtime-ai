@@ -1,5 +1,6 @@
-import { Story } from '@nokkio/magic';
+import { RESTRICT_TO_ENDPOINTS, Story } from '@nokkio/magic';
 import { getPublicFileUrl } from '@nokkio/endpoints';
+import { NotAuthorizedError } from '@nokkio/errors';
 
 import {
   generateImage,
@@ -20,6 +21,33 @@ function getNextState(state: Story['state']): Story['state'] {
 }
 
 export default function boot() {
+  // Do not allow stories to be listed
+  Story.beforeFind(({ isTrusted, query }) => {
+    if (isTrusted || query.id) {
+      return query;
+    }
+
+    throw new NotAuthorizedError();
+  });
+
+  Story.beforeDelete(RESTRICT_TO_ENDPOINTS);
+
+  Story.beforeUpdate(({ isTrusted, fields }) => {
+    if (isTrusted) {
+      return fields;
+    }
+
+    const updatedKeys = Object.keys(fields);
+
+    // duration is currently the only thing we allow to be updated
+    // fron the client.
+    if (updatedKeys.length === 1 && updatedKeys[0] === 'duration') {
+      return fields;
+    }
+
+    throw new NotAuthorizedError();
+  });
+
   Story.beforeRead(({ records }) => {
     return records.map((story) => {
       if (story.audio === null) {
