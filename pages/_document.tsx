@@ -12,7 +12,7 @@ export default function Document({ children }: DocumentProps): JSX.Element {
           rel="stylesheet"
         />
       </Head>
-      <Body>
+      <Body className="bg-gray-800">
         <div id="main">{children}</div>
       </Body>
     </Html>

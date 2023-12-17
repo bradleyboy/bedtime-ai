@@ -75,6 +75,8 @@ function AudioPlayer({ src }: { src: string }) {
   );
   const [currentTime, setCurrentTime] = useState<number>(0);
 
+  const p = duration === undefined ? 0 : (currentTime / duration) * 100;
+
   useEffect(() => {
     setDuration(ref.current?.duration);
 
@@ -96,18 +98,27 @@ function AudioPlayer({ src }: { src: string }) {
   }
 
   return (
-    <div className="text-gray-50 flex items-center justify-between">
-      <div onClick={handleTogglePlayback}>
-        {ref.current?.paused && <PlayIcon />}
-        {!ref.current?.paused && <PauseIcon />}
+    <div>
+      <div className="px-6 pt-6 text-gray-50 flex items-center justify-between">
+        <div onClick={handleTogglePlayback} className="cursor-pointer">
+          {ref.current?.paused && <PlayIcon />}
+          {!ref.current?.paused && <PauseIcon />}
+        </div>
+        <div className="font-mono text-sm">
+          {secondsToHumanReadable(currentTime)} /{' '}
+          {duration && secondsToHumanReadable(duration)}
+        </div>
+        <audio ref={ref}>
+          <source src={src} type="audio/mpeg" />
+        </audio>
       </div>
-      <div className="font-mono text-sm">
-        {secondsToHumanReadable(currentTime)} /{' '}
-        {duration && secondsToHumanReadable(duration)}
+
+      <div className={`mt-5 w-full bg-gray-700 h-2`}>
+        <div
+          style={{ width: `${p}%` }}
+          className="transition-all bg-gray-400 h-full"
+        ></div>
       </div>
-      <audio ref={ref}>
-        <source src={src} type="audio/mpeg" />
-      </audio>
     </div>
   );
 }
@@ -120,18 +131,22 @@ export default function () {
   }
 
   return (
-    <div className="bg-gray-800 p-6 max-w-xl flex flex-col space-y-6 rounded-md">
-      <h1 className="text-2xl font-bold text-gray-50">{story.title}</h1>
-      {story.image !== null && (
-        <div className="flex-1">
-          <Img image={story.image} />
+    <div className="flex items-center justify-center h-screen">
+      <div className="bg-gray-800 max-w-xl md:max-w-2xl flex flex-col rounded-md overflow-hidden mx-3">
+        <div className="pt-6 px-6 space-y-6">
+          <h1 className="text-2xl font-bold text-gray-50">{story.title}</h1>
+          {story.image !== null && (
+            <div className="flex-1">
+              <Img image={story.image} className="rounded-md" />
+            </div>
+          )}
         </div>
-      )}
-      {story.audio !== null && (
-        <div>
-          <AudioPlayer src={story.audio} />
-        </div>
-      )}
+        {story.audio !== null && (
+          <div>
+            <AudioPlayer src={story.audio} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

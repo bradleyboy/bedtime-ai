@@ -1,13 +1,15 @@
 import type { PageMetadataFunction } from '@nokkio/router';
 import { Story } from '@nokkio/magic';
-import { useForm, Input } from '@nokkio/forms';
+import { useForm, Textarea } from '@nokkio/forms';
 import { useNavigate } from '@nokkio/router';
+import { useState, ChangeEvent } from 'react';
 
 export const getPageMetadata: PageMetadataFunction = () => {
   return { title: "Tonight's Bedtime Story" };
 };
 
 export default function Index(): JSX.Element {
+  const [isSubmittable, setIsSubmittable] = useState(false);
   const navigate = useNavigate();
   const { Form, isProcessing } = useForm(Story, {
     onSuccess: (story) => {
@@ -15,25 +17,32 @@ export default function Index(): JSX.Element {
     },
   });
 
-  return (
-    <div className="text-gray-50 bg-gray-800 p-6 w-96 flex flex-col space-y-6 rounded-md">
-      <h1 className="text-2xl font-bold">Tonight's Bedtime Story</h1>
+  function handleChange(e: ChangeEvent<HTMLTextAreaElement>) {
+    setIsSubmittable(e.currentTarget.value.trim().length > 0);
+  }
 
-      <Form className="flex flex-col">
-        <Input
-          type="text"
+  return (
+    <>
+      <h1 className="text-2xl md:text-6xl font-bold px-6 md:px-12">
+        Tonight's Bedtime Story
+      </h1>
+
+      <Form className="flex flex-col flex-1">
+        <Textarea
+          onChange={handleChange}
+          autoFocus
+          disabled={isProcessing}
           name="prompt"
           placeholder="What's the subject of tonight's story?"
-          className="p-3 bg-gray-600 rounded-md"
+          className="leading-relaxed md:leading-relaxed resize-none disabled:text-gray-600 flex-1 mx-6 md:mx-12 text-gray-200 bg-transparent text-2xl md:text-5xl focus:outline-none rounded-md"
         />
-
         <button
-          disabled={isProcessing}
-          className="mt-5 rounded-md p-3 bg-gray-600 font-bold"
+          disabled={!isSubmittable || isProcessing}
+          className="disabled:bg-gray-900 disabled:text-gray-600 mt-6 text-2xl md:text-5xl rounded-md p-6 md:p-12 hover:bg-gray-600 transition-colors bg-gray-800 font-bold"
         >
-          Create
+          {isProcessing ? 'Creating...' : 'Create'}
         </button>
       </Form>
-    </div>
+    </>
   );
 }
