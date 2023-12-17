@@ -86,8 +86,9 @@ function handleTogglePlayback(audio: HTMLAudioElement | null) {
   }
 }
 
-const AudioPlayer = forwardRef<HTMLAudioElement, { src: string }>(
-  function AudioPlayer({ src }, forwardedRef) {
+const AudioPlayer = forwardRef<HTMLAudioElement, { story: Story }>(
+  function AudioPlayer({ story }, forwardedRef) {
+    const src = story.audio;
     const ref = useRef<HTMLAudioElement>(null);
 
     useImperativeHandle(forwardedRef, () => ref.current as HTMLAudioElement);
@@ -131,9 +132,26 @@ const AudioPlayer = forwardRef<HTMLAudioElement, { src: string }>(
       return () => window.removeEventListener('keydown', spaceHandler);
     }, []);
 
+    useEffect(() => {
+      if (duration === undefined) {
+        return;
+      }
+
+      // In an ideal world, we would parse the duration on the backend
+      // and store this at creation time, b
+      const roundedDuration = Math.round(duration);
+      if (roundedDuration !== story.duration) {
+        story.update({ duration: roundedDuration });
+      }
+    }, [duration]);
+
+    if (src === null) {
+      return null;
+    }
+
     return (
       <div>
-        <div className="px-6 md:px-12 pt-6 text-gray-50 flex items-center justify-between">
+        <div className="px-6 lg:px-12 pt-6 text-gray-50 flex items-center justify-between">
           <div
             onClick={() => handleTogglePlayback(ref.current)}
             className="cursor-pointer"
@@ -175,19 +193,10 @@ export default function () {
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl md:text-6xl font-bold px-6 md:px-12">
-          {story.title}
-        </h1>
+      <h1 className="text-2xl lg:text-6xl font-bold px-6 lg:px-12">
+        {story.title}
+      </h1>
 
-        <Link
-          to="/"
-          className="text-gray-300 mr-6 md:mr-12 px-3 py-1 md:px-6 md:py-3 border border-gray-500 rounded-lg hover:border-gray-300 hover:text-gray-200 transition-colors"
-        >
-          <span className="hidden md:inline">Create your own story</span>
-          <span className="md:hidden">+</span>
-        </Link>
-      </div>
       <div className="flex flex-1 flex-col">
         <div className="flex-1 flex justify-center bg-gray-900">
           <Img
@@ -197,7 +206,23 @@ export default function () {
           />
         </div>
         <div>
-          <AudioPlayer ref={ref} src={story.audio} />
+          <AudioPlayer ref={ref} story={story} />
+        </div>
+        <div className="px-6 py-3 lg:px-12 lg:py-4 text-sm bg-gray-900 flex-col lg:flex-row space-y-3 lg:space-y-0 flex justify-between">
+          <div>
+            Made with Tonight's Bedtime Story, an experiment with OpenAI's API.{' '}
+            <Link to="/" className="underline">
+              Create your own
+            </Link>
+            .
+          </div>
+          <div>
+            Built with{' '}
+            <a href="https://nokk.io" className="underline" target="_blank">
+              Nokkio
+            </a>
+            .
+          </div>
         </div>
       </div>
     </>

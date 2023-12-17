@@ -12,7 +12,7 @@ type PageParams = { id: string };
 function Spinner() {
   return (
     <svg
-      className="animate-spin mr-1 md:mr-3 h4 md:h-8 w-4 md:w-8 text-gray-600"
+      className="animate-spin -mb-0.5 lg:-mb-1 mr-1 lg:mr-3 h4 lg:h-8 w-4 lg:w-8 text-gray-600"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
@@ -23,7 +23,7 @@ function Spinner() {
         cy="12"
         r="10"
         stroke="currentColor"
-        stroke-width="4"
+        strokeWidth="4"
       ></circle>
       <path
         className="opacity-75"
@@ -36,7 +36,7 @@ function Spinner() {
 
 function InProgress({ children }: { children: string }) {
   return (
-    <div className="flex items-center justify-start space-x-1">
+    <div className="flex text-gray-200 items-center justify-start space-x-1">
       <Spinner />
       <p>{children}</p>
     </div>
@@ -45,14 +45,14 @@ function InProgress({ children }: { children: string }) {
 
 function Done({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-start space-x-1 text-gray-300">
+    <div className="flex items-center justify-start space-x-1 text-gray-400">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={1.5}
         stroke="currentColor"
-        className="text-green-300 -ml-0.5 md:-ml-1 w-5 h-5 md:w-10 md:h-10 -mb-0.5 md:-mb-1 mr-0.5 md:mr-2"
+        className="text-green-300 -ml-0.5 lg:-ml-1 w-5 h-5 lg:w-10 lg:h-10 -mb-0.5 lg:-mb-1 mr-0.5 lg:mr-2"
       >
         <path
           strokeLinecap="round"
@@ -75,11 +75,17 @@ export default function ({ params }: { params: PageParams }) {
     }
   }, [story.state]);
 
+  if (story.state === 'ready') {
+    // This will redirect from the effect above, so just render nothing
+    // to prevent flashing content
+    return null;
+  }
+
   if (story.state === 'failed') {
     return (
       <>
-        <h1 className="text-2xl md:text-6xl font-bold px-6 md:px-12">Uh oh.</h1>
-        <div className="px-6 space-y-3 text-gray-100 md:px-12 md:space-y-8 md:text-5xl">
+        <h1 className="text-2xl lg:text-6xl font-bold px-6 lg:px-12">Uh oh.</h1>
+        <div className="px-6 space-y-3 text-gray-100 lg:px-12 lg:space-y-8 lg:text-5xl">
           <p>
             Your story failed to create, sorry. Please{' '}
             <Link className="underline" to="/">
@@ -94,15 +100,17 @@ export default function ({ params }: { params: PageParams }) {
 
   return (
     <>
-      <h1 className="text-2xl md:text-6xl font-bold px-6 md:px-12">
+      <h1 className="text-2xl lg:text-6xl font-bold px-6 lg:px-12">
         Tonight's Bedtime Story
       </h1>
-      <div className="px-6 space-y-3 text-gray-600 md:px-12 md:space-y-8 md:text-5xl">
+      <div className="px-6 space-y-3 text-gray-600 lg:px-12 lg:space-y-8 lg:text-5xl">
         {story.title === null && (
           <InProgress>Generating a story from your prompt...</InProgress>
         )}
         {story.title !== null && <Done>Created "{story.title}"</Done>}
-        <InProgress>Generating image and audio...</InProgress>
+        {story.title !== null && (
+          <InProgress>Generating image and audio...</InProgress>
+        )}
       </div>
     </>
   );

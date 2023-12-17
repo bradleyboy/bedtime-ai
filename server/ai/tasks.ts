@@ -132,7 +132,6 @@ export async function generateImage(story: Story) {
     // Use this preamble to turn off the default behavior of this endpoint where
     // it rewrites the prompt with more detail.
     prompt: `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: In a vibrant, colorful, cinematic illustration style: ${story.imagePrompt}`,
-    quality: 'hd',
     size: '1792x1024',
   });
 

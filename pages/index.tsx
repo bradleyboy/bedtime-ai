@@ -23,7 +23,7 @@ export default function Index(): JSX.Element {
 
   return (
     <>
-      <h1 className="text-2xl md:text-6xl font-bold px-6 md:px-12">
+      <h1 className="text-2xl lg:text-6xl font-bold px-6 lg:px-12">
         Tonight's Bedtime Story
       </h1>
 
@@ -34,11 +34,11 @@ export default function Index(): JSX.Element {
           disabled={isProcessing}
           name="prompt"
           placeholder="What's the subject of tonight's story?"
-          className="leading-relaxed md:leading-relaxed resize-none disabled:text-gray-600 flex-1 mx-6 md:mx-12 text-gray-200 bg-transparent text-2xl md:text-5xl focus:outline-none rounded-md"
+          className="leading-relaxed lg:leading-relaxed resize-none disabled:text-gray-600 flex-1 mx-6 lg:mx-12 text-gray-200 bg-transparent text-2xl lg:text-5xl focus:outline-none rounded-md"
         />
         <button
           disabled={!isSubmittable || isProcessing}
-          className="disabled:bg-gray-900 disabled:text-gray-600 mt-6 text-2xl md:text-5xl rounded-md p-6 md:p-12 hover:bg-gray-600 transition-colors bg-gray-800 font-bold"
+          className="disabled:bg-gray-900 disabled:text-gray-600 mt-6 text-2xl lg:text-5xl rounded-md p-6 lg:p-12 hover:bg-gray-600 transition-colors bg-gray-800 font-bold"
         >
           {isProcessing ? 'Creating...' : 'Create'}
         </button>

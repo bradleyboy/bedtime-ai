@@ -14,6 +14,7 @@ module.exports = function ({ defineModel, types }) {
     imagePrompt: types.text(null),
     title: types.string(null),
     text: types.text(null),
+    duration: types.number(null),
     image: types.image(null),
     audio: types.text(null),
     attempt: types.number(1),
