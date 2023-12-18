@@ -10,7 +10,7 @@ export const getPageMetadata: PageMetadataFunction = () => {
 const listenForEnter: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
   if (e.key === 'Enter') {
     e.preventDefault();
-    e.currentTarget.form?.submit();
+    e.currentTarget.form?.requestSubmit();
   }
 };
 
