@@ -2,7 +2,7 @@ import { Html, Head, Body, DocumentProps } from '@nokkio/doc';
 
 export default function Document({ children }: DocumentProps): JSX.Element {
   return (
-    <Html>
+    <Html lang="en">
       <Head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />

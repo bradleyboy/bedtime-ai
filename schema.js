@@ -21,5 +21,9 @@ module.exports = function ({ defineModel, types }) {
     completedAt: types.datetime(null),
   });
 
+  // Enforce model event ordering only at the record
+  // level to reduce latency / contention.
+  Story.orderEventsByRecord();
+
   return { Story };
 };
