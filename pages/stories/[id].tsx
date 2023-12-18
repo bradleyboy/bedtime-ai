@@ -220,9 +220,10 @@ export default function () {
         </div>
         <div className="px-6 py-3 lg:px-12 lg:py-4 text-sm bg-gray-900 flex-col lg:flex-row space-y-3 lg:space-y-0 flex justify-between">
           <div>
-            Made with Tonight's Bedtime Story, an experiment with OpenAI's API.{' '}
+            Made with <strong>Tonight's Bedtime Story</strong>, an experiment
+            with OpenAI's API.{' '}
             <Link to="/" className="underline">
-              Create your own
+              Create your own bedtime tale
             </Link>
             .
           </div>
