@@ -20,8 +20,7 @@ When creating the story, follow these rules:
 Once the story is created, generating a title that is less than 100 characters. When adding the title to the response, write only the title, do not add any explaination before or after in your response. Do not wrap the title in any punctuation.
 
 Finally, create an image prompt following these directions:
-- the image prompt should be based on the generated story and will be used as cover art when shown to the child during storytime
-- The prompt should create an image with a modern, whimsical, flat cartoon style that appeals to young children.
+- The prompt should create an image with a modern, simple, flat cartoon style that appeals to young children.
 - IMPORTANT: make sure the prompt results in an image that is appropriate for children.
 - Return ONLY the prompt, do not include any text that is not part of the prompt.
 
