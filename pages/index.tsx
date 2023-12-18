@@ -1,19 +1,24 @@
 import type { PageMetadataFunction } from '@nokkio/router';
 import { Story } from '@nokkio/magic';
 import { useForm, Textarea } from '@nokkio/forms';
-import { useNavigate } from '@nokkio/router';
-import { useState, ChangeEvent } from 'react';
+import { useState, ChangeEvent, KeyboardEventHandler } from 'react';
 
 export const getPageMetadata: PageMetadataFunction = () => {
   return { title: "Tonight's Bedtime Story" };
 };
 
+const listenForEnter: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    e.currentTarget.form?.submit();
+  }
+};
+
 export default function Index(): JSX.Element {
   const [isSubmittable, setIsSubmittable] = useState(false);
-  const navigate = useNavigate();
   const { Form, isProcessing } = useForm(Story, {
-    onSuccess: (story) => {
-      navigate(`/stories/${story.id}/processing`);
+    redirectOnSuccess: (story) => {
+      return `/stories/${story.id}/processing`;
     },
   });
 
@@ -29,6 +34,7 @@ export default function Index(): JSX.Element {
 
       <Form className="flex flex-col flex-1">
         <Textarea
+          onKeyDown={listenForEnter}
           onChange={handleChange}
           autoFocus
           disabled={isProcessing}
