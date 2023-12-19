@@ -22,6 +22,7 @@ Once the story is created, generating a title that is less than 100 characters. 
 Finally, create an image prompt following these directions:
 - The prompt should create an image with a modern, simple, flat cartoon style that appeals to young children.
 - IMPORTANT: make sure the prompt results in an image that is appropriate for children.
+- Children can often spot an AI generated image, try to prevent that by keeping the image simple and not cluttering the scene up with too many concepts at once.
 - Return ONLY the prompt, do not include any text that is not part of the prompt.
 
 Once you have all this information, return it in a JSON string with the keys: title, story, image_prompt. You MUST return valid JSON. Do NOT wrap the json output in \`\`\`json ... \`\`\`!
@@ -127,10 +128,7 @@ export async function generateImage(story: Story) {
 
   const image = await openai.images.generate({
     model: 'dall-e-3',
-    // Since the AI is generated our image prompt, they are already very detailed.
-    // Use this preamble to turn off the default behavior of this endpoint where
-    // it rewrites the prompt with more detail.
-    prompt: `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: In a vibrant, colorful, cinematic illustration style: ${story.imagePrompt}`,
+    prompt: `In a vibrant, colorful, cinematic illustration style: ${story.imagePrompt}`,
     size: '1792x1024',
   });
 
