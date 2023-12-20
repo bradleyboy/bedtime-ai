@@ -12,6 +12,8 @@ import { Story } from '@nokkio/magic';
 import { Img, createImageURL } from '@nokkio/image';
 
 import Spinner from 'components/Spinner';
+import Footer from 'components/Footer';
+import { secondsToHumanReadable } from 'utils/media';
 
 type PageParams = { id: string };
 
@@ -67,18 +69,6 @@ function PauseIcon() {
       />
     </svg>
   );
-}
-
-function secondsToHumanReadable(input: number) {
-  if (isNaN(input)) {
-    return '';
-  }
-
-  const n = Math.round(input);
-  const m = Math.floor(n / 60);
-  const s = n % 60;
-
-  return `${m}:${s < 10 ? `0${s}` : s}`;
 }
 
 function handleTogglePlayback(audio: HTMLAudioElement | null) {
@@ -228,23 +218,7 @@ export default function () {
         <div>
           <AudioPlayer ref={ref} story={story} />
         </div>
-        <div className="px-6 py-3 lg:px-12 lg:py-4 text-sm bg-gray-900 flex-col lg:flex-row space-y-3 lg:space-y-0 flex justify-between">
-          <div>
-            Made with <strong>Tonight's Bedtime Story</strong>, an experiment
-            with OpenAI's API.{' '}
-            <Link to="/" className="underline">
-              Create your own bedtime tale
-            </Link>
-            .
-          </div>
-          <div>
-            Built with{' '}
-            <a href="https://nokk.io" className="underline" target="_blank">
-              Nokkio
-            </a>
-            .
-          </div>
-        </div>
+        <Footer />
       </div>
     </>
   );
