@@ -70,6 +70,10 @@ function PauseIcon() {
 }
 
 function secondsToHumanReadable(input: number) {
+  if (isNaN(input)) {
+    return '';
+  }
+
   const n = Math.round(input);
   const m = Math.floor(n / 60);
   const s = n % 60;
@@ -97,21 +101,27 @@ const AudioPlayer = forwardRef<HTMLAudioElement, { story: Story }>(
     useImperativeHandle(forwardedRef, () => ref.current as HTMLAudioElement);
 
     const [duration, setDuration] = useState<number | undefined>(
-      ref.current?.duration,
+      typeof ref.current?.duration === 'number'
+        ? ref.current.duration
+        : undefined,
     );
     const [currentTime, setCurrentTime] = useState<number>(0);
 
     const p = duration === undefined ? 0 : (currentTime / duration) * 100;
 
     useEffect(() => {
-      setDuration(ref.current?.duration);
+      if (typeof ref.current?.duration === 'number') {
+        setDuration(ref.current?.duration);
+      }
 
       ref.current?.addEventListener('timeupdate', () => {
         setCurrentTime(ref.current?.currentTime!);
       });
 
       ref.current?.addEventListener('loadedmetadata', () => {
-        setDuration(ref.current?.duration);
+        if (typeof ref.current?.duration === 'number') {
+          setDuration(ref.current?.duration);
+        }
       });
 
       const spaceHandler = (e: KeyboardEvent) => {
@@ -136,14 +146,14 @@ const AudioPlayer = forwardRef<HTMLAudioElement, { story: Story }>(
     }, []);
 
     useEffect(() => {
-      if (duration === undefined) {
+      if (typeof duration !== 'number') {
         return;
       }
 
       // In an ideal world, we would parse the duration on the backend
       // and store this at creation time, b
       const roundedDuration = Math.round(duration);
-      if (roundedDuration !== story.duration) {
+      if (!isNaN(roundedDuration) && roundedDuration !== story.duration) {
         story.update({ duration: roundedDuration });
       }
     }, [duration]);
