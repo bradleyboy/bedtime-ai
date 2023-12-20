@@ -23,7 +23,7 @@ function getNextState(state: Story['state']): Story['state'] {
 export default function boot() {
   // Do not allow stories to be listed
   Story.beforeFind(({ isTrusted, query }) => {
-    if (isTrusted || query.id) {
+    if (isTrusted || query.id || query.isPublic) {
       return query;
     }
 

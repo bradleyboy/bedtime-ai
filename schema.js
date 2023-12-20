@@ -10,7 +10,8 @@ module.exports = function ({ defineModel, types }) {
         'generating_media',
         'ready',
         'failed',
-      ]),
+      ])
+      .filterable(),
     imagePrompt: types.text(null),
     title: types.string(null),
     text: types.text(null),
@@ -19,6 +20,7 @@ module.exports = function ({ defineModel, types }) {
     audio: types.text(null),
     attempt: types.number(1),
     completedAt: types.datetime(null),
+    isPublic: types.bool(false),
   });
 
   // Enforce model event ordering only at the record
