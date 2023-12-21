@@ -21,6 +21,17 @@ function getNextState(state: Story['state']): Story['state'] {
 }
 
 export default function boot() {
+  User.beforeFind(({ isTrusted, query }) => {
+    if (isTrusted || query.id) {
+      return query;
+    }
+
+    throw new NotAuthorizedError();
+  });
+
+  User.beforeUpdate(RESTRICT_TO_ENDPOINTS);
+  User.beforeDelete(RESTRICT_TO_ENDPOINTS);
+
   // Do not allow stories to be listed unless the public
   // query param is set and true, or we are in a trusted
   // environment (e.g. endpoints)

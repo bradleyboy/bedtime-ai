@@ -10,14 +10,12 @@ export async function getPageData({ auth }: PageDataArgs) {
   if (auth?.isAdmin) {
     return Story.find({
       filter: { state: 'ready' },
-      with: ['user'],
       sort: '-createdAt',
     });
   }
 
   return Story.find({
     filter: { isPublic: true, state: 'ready' },
-    with: ['user'],
     sort: '-createdAt',
   });
 }
