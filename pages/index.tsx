@@ -43,7 +43,7 @@ export default function (): JSX.Element {
           .
         </p>
       </div>
-      <div className="px-6 lg:px-12 grid grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {stories.map((story) => (
           <div
             className={`rounded-xl overflow-hidden${
