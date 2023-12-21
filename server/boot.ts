@@ -1,4 +1,4 @@
-import { RESTRICT_TO_ENDPOINTS, Story } from '@nokkio/magic';
+import { RESTRICT_TO_ENDPOINTS, Story, User } from '@nokkio/magic';
 import { getPublicFileUrl } from '@nokkio/endpoints';
 import { NotAuthorizedError } from '@nokkio/errors';
 
@@ -24,9 +24,17 @@ export default function boot() {
   // Do not allow stories to be listed unless the public
   // query param is set and true, or we are in a trusted
   // environment (e.g. endpoints)
-  Story.beforeFind(({ isTrusted, query }) => {
+  Story.beforeFind(async ({ userId, isTrusted, query }) => {
     if (isTrusted || query.id || query.isPublic) {
       return query;
+    }
+
+    if (userId !== null) {
+      const user = await User.findById(userId);
+
+      if (user.isAdmin) {
+        return query;
+      }
     }
 
     throw new NotAuthorizedError();
@@ -34,7 +42,7 @@ export default function boot() {
 
   Story.beforeDelete(RESTRICT_TO_ENDPOINTS);
 
-  Story.beforeUpdate(({ isTrusted, fields }) => {
+  Story.beforeUpdate(async ({ isTrusted, userId, fields }) => {
     if (isTrusted) {
       return fields;
     }
@@ -45,6 +53,18 @@ export default function boot() {
     // fron the client.
     if (updatedKeys.length === 1 && updatedKeys[0] === 'duration') {
       return fields;
+    }
+
+    if (
+      updatedKeys.length === 1 &&
+      updatedKeys[0] === 'isPublic' &&
+      userId !== null
+    ) {
+      const user = await User.findById(userId);
+
+      if (user && user.isAdmin) {
+        return fields;
+      }
     }
 
     throw new NotAuthorizedError();

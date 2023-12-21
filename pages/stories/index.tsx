@@ -1,13 +1,25 @@
 import { usePageData, Link } from '@nokkio/router';
-import type { PageMetadataFunction } from '@nokkio/router';
+import type { PageMetadataFunction, PageDataArgs } from '@nokkio/router';
 import { Story } from '@nokkio/magic';
 import { Img } from '@nokkio/image';
 
 import { secondsToHumanReadable } from 'utils/media';
 import Footer from 'components/Footer';
 
-export async function getPageData() {
-  return Story.find({ filter: { isPublic: true, state: 'ready' } });
+export async function getPageData({ auth }: PageDataArgs) {
+  if (auth?.isAdmin) {
+    return Story.find({
+      filter: { state: 'ready' },
+      with: ['user'],
+      sort: '-createdAt',
+    });
+  }
+
+  return Story.find({
+    filter: { isPublic: true, state: 'ready' },
+    with: ['user'],
+    sort: '-createdAt',
+  });
 }
 
 export const getPageMetadata: PageMetadataFunction<typeof getPageData> = () => {
@@ -24,7 +36,11 @@ export default function (): JSX.Element {
       </h1>
       <div className="px-6 lg:px-12 grid grid-cols-2 lg:grid-cols-3 gap-6">
         {stories.map((story) => (
-          <div className="rounded-xl overflow-hidden">
+          <div
+            className={`rounded-xl overflow-hidden${
+              story.isPublic ? '' : ' opacity-50'
+            }`}
+          >
             <Link className="relative" to={`/stories/${story.id}`}>
               <div className="aspect-square">
                 {story.image && <Img image={story.image} crop />}

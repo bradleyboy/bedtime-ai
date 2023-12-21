@@ -4,12 +4,15 @@ import {
   useState,
   forwardRef,
   useImperativeHandle,
+  useCallback,
+  MouseEventHandler,
 } from 'react';
 
 import type { PageDataArgs, PageMetadataFunction } from '@nokkio/router';
 import { usePageData, Link } from '@nokkio/router';
 import { Story } from '@nokkio/magic';
 import { Img, createImageURL } from '@nokkio/image';
+import { useAuth } from '@nokkio/auth';
 
 import Spinner from 'components/Spinner';
 import Footer from 'components/Footer';
@@ -18,7 +21,7 @@ import { secondsToHumanReadable } from 'utils/media';
 type PageParams = { id: string };
 
 export async function getPageData({ params }: PageDataArgs<PageParams>) {
-  return Story.findById(params.id, { with: ['user'] });
+  return Story.findById(params.id);
 }
 
 export const getPageMetadata: PageMetadataFunction<typeof getPageData> = ({
@@ -182,6 +185,33 @@ const AudioPlayer = forwardRef<HTMLAudioElement, { story: Story }>(
   },
 );
 
+function AdminToolbar({ story }: { story: Story }) {
+  const { isAuthenticated, user } = useAuth();
+
+  const toggleVisibility = useCallback(
+    (e) => {
+      e.preventDefault();
+      story.update({ isPublic: !story.isPublic });
+    },
+    [story.isPublic],
+  ) as MouseEventHandler<HTMLButtonElement>;
+
+  if (!isAuthenticated || !user.isAdmin) {
+    return null;
+  }
+
+  return (
+    <div className="absolute top-6 right-6 lg:right-12">
+      <button
+        onClick={toggleVisibility}
+        className="px-3 py-2 border border-gray-600 rounded text-sm"
+      >
+        {story.isPublic ? 'Make private' : 'Make public'}
+      </button>
+    </div>
+  );
+}
+
 export default function () {
   const story = usePageData<typeof getPageData>();
   const ref = useRef<HTMLAudioElement>(null);
@@ -197,9 +227,9 @@ export default function () {
 
   return (
     <>
-      <h1 className="text-2xl lg:text-6xl font-bold px-6 lg:px-12">
-        {story.title}
-      </h1>
+      <div className="px-6 lg:px-12 space-y-3 lg:space-y-6">
+        <h1 className="text-2xl lg:text-6xl font-bold">{story.title}</h1>
+      </div>
 
       <div className="flex flex-1 flex-col">
         <div className="relative flex-1 flex justify-center bg-gray-900">
@@ -214,6 +244,7 @@ export default function () {
             image={story.image}
             className="h-0 min-h-full object-contain"
           />
+          <AdminToolbar story={story} />
         </div>
         <div>
           <AudioPlayer ref={ref} story={story} />

@@ -5,6 +5,7 @@ module.exports = function ({ defineModel, types }) {
     email: types.string(),
     name: types.string(),
     picture: types.string(),
+    isAdmin: types.bool(false),
   });
 
   const Story = defineModel('Story', {
