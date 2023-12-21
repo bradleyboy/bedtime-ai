@@ -1,76 +1,72 @@
-import { useState, ChangeEvent, KeyboardEventHandler } from 'react';
-
-import type { PageMetadataFunction } from '@nokkio/router';
+import { usePageData, Link } from '@nokkio/router';
+import type { PageMetadataFunction, PageDataArgs } from '@nokkio/router';
 import { Story } from '@nokkio/magic';
-import { useForm, Textarea } from '@nokkio/forms';
-import { useAuth } from '@nokkio/auth';
+import { Img } from '@nokkio/image';
 
-import SignInWithGoogleButton from 'components/SignInWithGoogleButton';
+import { secondsToHumanReadable } from 'utils/media';
+import Footer from 'components/Footer';
 
-export const getPageMetadata: PageMetadataFunction = () => {
-  return { title: "Tonight's Bedtime Story" };
-};
-
-const listenForEnter: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    e.currentTarget.form?.requestSubmit();
+export async function getPageData({ auth }: PageDataArgs) {
+  if (auth?.isAdmin) {
+    return Story.find({
+      filter: { state: 'ready' },
+      with: ['user'],
+      sort: '-createdAt',
+    });
   }
-};
 
-export default function Index(): JSX.Element {
-  const { logout, isAuthenticated, user } = useAuth();
-  const [isSubmittable, setIsSubmittable] = useState(false);
-  const { Form, isProcessing } = useForm(Story, {
-    redirectOnSuccess: (story) => {
-      return `/stories/${story.id}/processing`;
-    },
+  return Story.find({
+    filter: { isPublic: true, state: 'ready' },
+    with: ['user'],
+    sort: '-createdAt',
   });
+}
 
-  function handleChange(e: ChangeEvent<HTMLTextAreaElement>) {
-    setIsSubmittable(e.currentTarget.value.trim().length > 0);
-  }
+export const getPageMetadata: PageMetadataFunction<typeof getPageData> = () => {
+  return { title: "Tonight's Bedtime Story: All stories" };
+};
 
-  if (!isAuthenticated) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="w-96 bg-gray-900 rounded-md flex space-y-6 p-6 flex-col">
-          <div className="text-xl font-bold">Login to continue</div>
-          <p>Authenticate with Google to create your first story.</p>
-          <div className="inline-flex">
-            <SignInWithGoogleButton />
-          </div>
-        </div>
-      </div>
-    );
-  }
+export default function (): JSX.Element {
+  const stories = usePageData<typeof getPageData>();
 
   return (
     <>
-      <h1
-        onClick={() => logout()}
-        className="text-2xl lg:text-6xl font-bold px-6 lg:px-12"
-      >
-        Tonight's Bedtime Story
-      </h1>
-
-      <Form className="flex flex-col flex-1">
-        <Textarea
-          onKeyDown={listenForEnter}
-          onChange={handleChange}
-          autoFocus
-          disabled={isProcessing}
-          name="prompt"
-          placeholder="What's the subject of tonight's story?"
-          className="leading-relaxed lg:leading-relaxed resize-none disabled:text-gray-600 flex-1 mx-6 lg:mx-12 text-gray-200 bg-transparent text-2xl lg:text-5xl focus:outline-none rounded-md"
-        />
-        <button
-          disabled={!isSubmittable || isProcessing}
-          className="disabled:bg-gray-900 disabled:text-gray-600 mt-6 text-2xl lg:text-5xl rounded-md p-6 lg:p-12 hover:bg-gray-600 transition-colors bg-gray-800 font-bold"
-        >
-          {isProcessing ? 'Creating...' : 'Create'}
-        </button>
-      </Form>
+      <div className="px-6 lg:px-12 space-y-3 lg:space-y-6">
+        <h1 className="text-2xl lg:text-6xl font-bold">
+          Tonight's Bedtime Story
+        </h1>
+        <p className="text-gray-300">
+          Stories, images, and audio generated with the OpenAI API.{' '}
+          <Link className="underline hover:text-gray-50" to="/stories/create">
+            Try creating your own
+          </Link>
+          .
+        </p>
+      </div>
+      <div className="px-6 lg:px-12 grid grid-cols-2 lg:grid-cols-3 gap-6">
+        {stories.map((story) => (
+          <div
+            className={`rounded-xl overflow-hidden${
+              story.isPublic ? '' : ' opacity-50'
+            }`}
+          >
+            <Link className="relative" to={`/stories/${story.id}`}>
+              <div className="aspect-square">
+                {story.image && <Img image={story.image} crop />}
+              </div>
+              <div className="absolute bottom-0 left-0 bg-gray-900 p-6 w-full space-y-1 opacity-95">
+                <div className="uppercase text-sm font-bold">{story.title}</div>
+                {story.duration && (
+                  <div className="mono text-sm text-gray-400">
+                    {secondsToHumanReadable(story.duration)}
+                  </div>
+                )}
+              </div>
+            </Link>
+          </div>
+        ))}
+      </div>
+      <Footer />
     </>
   );
 }
