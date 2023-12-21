@@ -28,7 +28,7 @@ async function handleCredential(credential: string, nonce: string) {
   form.set('credential', credential);
   form.set('nonce', nonce);
 
-  const res = await makeRequest('/auth', {
+  await makeRequest('/auth', {
     method: 'POST',
     body: form,
   });

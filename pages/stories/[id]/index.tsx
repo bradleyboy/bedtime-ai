@@ -9,7 +9,7 @@ import {
 } from 'react';
 
 import type { PageDataArgs, PageMetadataFunction } from '@nokkio/router';
-import { usePageData, Link } from '@nokkio/router';
+import { usePageData } from '@nokkio/router';
 import { Story } from '@nokkio/magic';
 import { Img, createImageURL } from '@nokkio/image';
 import { useAuth } from '@nokkio/auth';

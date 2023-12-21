@@ -32,7 +32,7 @@ export default function boot() {
     if (userId !== null) {
       const user = await User.findById(userId);
 
-      if (user.isAdmin) {
+      if (user !== null && user.isAdmin) {
         return query;
       }
     }

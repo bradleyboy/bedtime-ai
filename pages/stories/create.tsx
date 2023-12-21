@@ -19,7 +19,7 @@ const listenForEnter: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
 };
 
 export default function Index(): JSX.Element {
-  const { logout, isAuthenticated, user } = useAuth();
+  const { logout, isAuthenticated } = useAuth();
   const [isSubmittable, setIsSubmittable] = useState(false);
   const { Form, isProcessing } = useForm(Story, {
     redirectOnSuccess: (story) => {
