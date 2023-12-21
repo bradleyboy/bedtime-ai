@@ -4,7 +4,7 @@ import type { PageMetadataFunction } from '@nokkio/router';
 import { useStory } from '@nokkio/magic';
 import { useNavigate, Link } from '@nokkio/router';
 
-import Spinner from 'components/Spinner';
+import Progress from 'components/Progress';
 
 export const getPageMetadata: PageMetadataFunction = () => {
   return { title: "Tonight's Bedtime Story: Creating..." };
@@ -12,10 +12,16 @@ export const getPageMetadata: PageMetadataFunction = () => {
 
 type PageParams = { id: string };
 
-function InProgress({ children }: { children: string }) {
+function InProgress({
+  children,
+  estimatedTime,
+}: {
+  children: string;
+  estimatedTime: number;
+}) {
   return (
     <div className="flex text-gray-200 items-center justify-start space-x-1">
-      <Spinner />
+      <Progress expectedTime={estimatedTime} />
       <p>{children}</p>
     </div>
   );
@@ -83,11 +89,15 @@ export default function ({ params }: { params: PageParams }) {
       </h1>
       <div className="px-6 space-y-3 text-gray-600 lg:px-12 lg:space-y-8 lg:text-5xl">
         {story.title === null && (
-          <InProgress>Generating a story from your prompt...</InProgress>
+          <InProgress estimatedTime={90000}>
+            Generating a story from your prompt...
+          </InProgress>
         )}
         {story.title !== null && <Done>Created "{story.title}"</Done>}
         {story.title !== null && (
-          <InProgress>Generating image and audio...</InProgress>
+          <InProgress estimatedTime={45000}>
+            Generating image and audio...
+          </InProgress>
         )}
       </div>
     </>
