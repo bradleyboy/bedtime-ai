@@ -6,7 +6,7 @@ export default function Footer() {
       <div>
         Made with <strong>Tonight's Bedtime Story</strong>, an experiment with
         OpenAI's API.{' '}
-        <Link to="/" className="underline">
+        <Link to="/stories/create" className="underline">
           Create your own bedtime tale
         </Link>
         .

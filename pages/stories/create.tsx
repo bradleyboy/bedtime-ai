@@ -33,7 +33,7 @@ export default function Index(): JSX.Element {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-full items-center justify-center mx-6 md:mx-0">
         <div className="w-96 bg-gray-900 rounded-md flex space-y-6 p-6 flex-col">
           <div className="text-xl font-bold">Login to continue</div>
           <p>Authenticate with Google to create your first story.</p>

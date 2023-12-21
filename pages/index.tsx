@@ -50,7 +50,7 @@ export default function (): JSX.Element {
               story.isPublic ? '' : ' opacity-50'
             }`}
           >
-            <Link className="relative" to={`/stories/${story.id}`}>
+            <Link className="relative block" to={`/stories/${story.id}`}>
               <div className="aspect-square">
                 {story.image && <Img image={story.image} crop />}
               </div>
