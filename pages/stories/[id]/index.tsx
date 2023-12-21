@@ -165,10 +165,12 @@ const AudioPlayer = forwardRef<HTMLAudioElement, { story: Story }>(
             {ref.current?.paused && <PlayIcon />}
             {!ref.current?.paused && <PauseIcon />}
           </div>
-          <div className="font-mono text-sm">
-            {secondsToHumanReadable(currentTime)} /{' '}
-            {duration && secondsToHumanReadable(duration)}
-          </div>
+          {duration && (
+            <div className="font-mono text-sm">
+              {secondsToHumanReadable(currentTime)} /{' '}
+              {duration && secondsToHumanReadable(duration)}
+            </div>
+          )}
           <audio ref={ref}>
             <source src={src} type="audio/mpeg" />
           </audio>
