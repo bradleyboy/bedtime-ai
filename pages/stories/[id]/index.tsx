@@ -18,7 +18,7 @@ import { secondsToHumanReadable } from 'utils/media';
 type PageParams = { id: string };
 
 export async function getPageData({ params }: PageDataArgs<PageParams>) {
-  return Story.findById(params.id);
+  return Story.findById(params.id, { with: ['user'] });
 }
 
 export const getPageMetadata: PageMetadataFunction<typeof getPageData> = ({

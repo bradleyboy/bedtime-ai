@@ -63,6 +63,14 @@ export default function boot() {
     });
   });
 
+  Story.beforeCreate(({ fields, userId }) => {
+    if (!userId) {
+      throw new NotAuthorizedError();
+    }
+
+    return fields;
+  });
+
   Story.afterCreate(async (story) => {
     await story.update({
       state: getNextState(story.state),

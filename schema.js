@@ -1,5 +1,12 @@
 /** @type {import('@nokkio/schema').Config} */
 module.exports = function ({ defineModel, types }) {
+  const User = defineModel('User', {
+    sub: types.string().unique(),
+    email: types.string(),
+    name: types.string(),
+    picture: types.string(),
+  });
+
   const Story = defineModel('Story', {
     prompt: types.string(),
     state: types
@@ -27,5 +34,8 @@ module.exports = function ({ defineModel, types }) {
   // level to reduce latency / contention.
   Story.orderEventsByRecord();
 
-  return { Story };
+  User.hasMany(Story);
+  User.actAsAuth({ type: 'custom' });
+
+  return { Story, User };
 };

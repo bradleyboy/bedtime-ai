@@ -5,15 +5,16 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "@types/google.accounts": "^0.0.14",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/react": "^18.0.9",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.21",
     "prettier-plugin-tailwindcss": "^0.2.5",
     "tailwindcss": "^3.3.0",
-    "@types/react": "^18.0.9",
     "typescript": "^5.2.0"
   },
   "scripts": {
@@ -24,6 +25,6 @@
   "license": "UNLICENSED",
   "nokkio": {
     "id": "2ZdbUsho0QOFtHlBB87hOfYDqTc",
-    "version": "v0.0.0-4ce49dbb-1703108277"
+    "version": "v0.0.0-4808382a-1703169026"
   }
 }

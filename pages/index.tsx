@@ -1,7 +1,11 @@
+import { useState, ChangeEvent, KeyboardEventHandler } from 'react';
+
 import type { PageMetadataFunction } from '@nokkio/router';
 import { Story } from '@nokkio/magic';
 import { useForm, Textarea } from '@nokkio/forms';
-import { useState, ChangeEvent, KeyboardEventHandler } from 'react';
+import { useAuth } from '@nokkio/auth';
+
+import SignInWithGoogleButton from 'components/SignInWithGoogleButton';
 
 export const getPageMetadata: PageMetadataFunction = () => {
   return { title: "Tonight's Bedtime Story" };
@@ -15,6 +19,7 @@ const listenForEnter: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
 };
 
 export default function Index(): JSX.Element {
+  const { logout, isAuthenticated, user } = useAuth();
   const [isSubmittable, setIsSubmittable] = useState(false);
   const { Form, isProcessing } = useForm(Story, {
     redirectOnSuccess: (story) => {
@@ -26,9 +31,26 @@ export default function Index(): JSX.Element {
     setIsSubmittable(e.currentTarget.value.trim().length > 0);
   }
 
+  if (!isAuthenticated) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="w-96 bg-gray-900 rounded-md flex space-y-6 p-6 flex-col">
+          <div className="text-xl font-bold">Login to continue</div>
+          <p>Authenticate with Google to create your first story.</p>
+          <div className="inline-flex">
+            <SignInWithGoogleButton />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
-      <h1 className="text-2xl lg:text-6xl font-bold px-6 lg:px-12">
+      <h1
+        onClick={() => logout()}
+        className="text-2xl lg:text-6xl font-bold px-6 lg:px-12"
+      >
         Tonight's Bedtime Story
       </h1>
 
