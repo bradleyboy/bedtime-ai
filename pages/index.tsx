@@ -7,15 +7,25 @@ import { secondsToHumanReadable } from 'utils/media';
 import Footer from 'components/Footer';
 
 export async function getPageData({ auth }: PageDataArgs) {
-  if (auth?.isAdmin) {
+  if (auth !== null) {
+    if (auth.isAdmin) {
+      return Story.find({
+        filter: { state: 'ready' },
+        sort: '-createdAt',
+      });
+    }
+
     return Story.find({
-      filter: { state: 'ready' },
+      filter: [
+        { state: 'ready' },
+        { $or: { isPublic: true, userId: auth.id } },
+      ],
       sort: '-createdAt',
     });
   }
 
   return Story.find({
-    filter: { isPublic: true, state: 'ready' },
+    filter: { state: 'ready', isPublic: true },
     sort: '-createdAt',
   });
 }
@@ -43,15 +53,18 @@ export default function (): JSX.Element {
       </div>
       <div className="px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {stories.map((story) => (
-          <div
-            className={`rounded-xl overflow-hidden${
-              story.isPublic ? '' : ' opacity-50'
-            }`}
-          >
+          <div key={story.id} className="rounded-xl overflow-hidden">
             <Link className="relative block" to={`/stories/${story.id}`}>
-              <div className="aspect-square">
+              <div
+                className={`aspect-square${story.isPublic ? '' : ' grayscale'}`}
+              >
                 {story.image && <Img image={story.image} crop />}
               </div>
+              {story.isPublic === false && (
+                <div className="absolute text-white top-6 right-6 bg-gray-800 px-3 py-1 text-sm bg-opacity-70">
+                  Visible only to you
+                </div>
+              )}
               <div className="absolute bottom-0 left-0 bg-gray-900 p-6 w-full space-y-1 opacity-95">
                 <div className="uppercase text-sm font-bold">{story.title}</div>
                 {story.duration && (

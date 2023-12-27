@@ -19,12 +19,12 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "nokkio:ci": "tsc"
+    "nokkio:ci": "tsc && nokkio typecheck-server"
   },
   "author": "",
   "license": "UNLICENSED",
   "nokkio": {
     "id": "2ZdbUsho0QOFtHlBB87hOfYDqTc",
-    "version": "v0.0.0-3c14cd3a-1703170654"
+    "version": "v0.0.0-5ade8a41-1703644632"
   }
 }

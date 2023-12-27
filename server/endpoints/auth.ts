@@ -26,7 +26,6 @@ export async function post(req: NokkioRequest) {
   try {
     const result = await jwtVerify(credential, JWKS, {
       issuer: 'https://accounts.google.com',
-      nonce,
       audience: CLIENT_ID,
     });
 
@@ -38,7 +37,14 @@ export async function post(req: NokkioRequest) {
       picture: string;
       name: string;
       exp: number;
+      nonce: string;
     };
+
+    if (payload.nonce !== nonce) {
+      return new Response('Validation Error: nonce does not match', {
+        status: 400,
+      });
+    }
 
     if (payload.aud !== CLIENT_ID) {
       return new Response('Validation Error: iad does not match client ID', {

@@ -1,4 +1,9 @@
-import { RESTRICT_TO_ENDPOINTS, Story, User } from '@nokkio/magic';
+import {
+  RESTRICT_TO_ENDPOINTS,
+  Story,
+  User,
+  isOrConditionBlock,
+} from '@nokkio/magic';
 import { getPublicFileUrl } from '@nokkio/endpoints';
 import { NotAuthorizedError } from '@nokkio/errors';
 
@@ -21,14 +26,10 @@ function getNextState(state: Story['state']): Story['state'] {
 }
 
 export default function boot() {
-  User.beforeFind(({ isTrusted, query }) => {
-    if (isTrusted || query.id) {
-      return query;
-    }
-
-    throw new NotAuthorizedError();
-  });
-
+  // All user operations happen in endpoints only, do not allow
+  // the client to perform these or direct access to the data endpoints.
+  User.beforeFind(RESTRICT_TO_ENDPOINTS);
+  User.beforeCreate(RESTRICT_TO_ENDPOINTS);
   User.beforeUpdate(RESTRICT_TO_ENDPOINTS);
   User.beforeDelete(RESTRICT_TO_ENDPOINTS);
 
@@ -36,10 +37,41 @@ export default function boot() {
   // query param is set and true, or we are in a trusted
   // environment (e.g. endpoints)
   Story.beforeFind(async ({ userId, isTrusted, query }) => {
-    if (isTrusted || query.id || query.isPublic) {
+    if (isTrusted) {
       return query;
     }
 
+    // Basic home page / detail page query should either provide
+    // an ID or have isPublic set to true
+    if (query.length === 1) {
+      if (isOrConditionBlock(query[0])) {
+        throw new NotAuthorizedError();
+      }
+
+      if (query[0].id || query[0].isPublic) {
+        return query;
+      }
+    }
+
+    // Logged in user home page feed query should have state = ready
+    // and isPublic = true OR userId that matches the logged in user.
+    if (query.length === 2) {
+      const [stateQuery, orQuery] = query;
+
+      if (isOrConditionBlock(stateQuery) || !isOrConditionBlock(orQuery)) {
+        throw new NotAuthorizedError();
+      }
+
+      if (stateQuery.state !== 'ready') {
+        throw new NotAuthorizedError();
+      }
+
+      if (orQuery.$or.isPublic !== true || orQuery.$or.userId !== userId) {
+        throw new NotAuthorizedError();
+      }
+    }
+
+    // Fallback for when an admin is present, allow the query through
     if (userId !== null) {
       const user = await User.findById(userId);
 
@@ -48,6 +80,7 @@ export default function boot() {
       }
     }
 
+    // Everything else should not be allowed client-side
     throw new NotAuthorizedError();
   });
 
