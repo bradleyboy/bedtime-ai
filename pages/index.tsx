@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { usePageData, Link } from '@nokkio/router';
 import type { PageMetadataFunction, PageDataArgs } from '@nokkio/router';
 import { Story } from '@nokkio/magic';
@@ -5,6 +7,7 @@ import { Img } from '@nokkio/image';
 
 import { secondsToHumanReadable } from 'utils/media';
 import Footer from 'components/Footer';
+import Spinner from 'components/Spinner';
 
 export async function getPageData({ auth }: PageDataArgs) {
   if (auth !== null) {
@@ -34,6 +37,30 @@ export const getPageMetadata: PageMetadataFunction<typeof getPageData> = () => {
   return { title: "Tonight's Bedtime Story: All stories" };
 };
 
+function StoryImage({ story }: { story: Story }) {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <div
+      className={`relative aspect-square${story.isPublic ? '' : ' grayscale'}`}
+    >
+      {!loaded && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <Spinner />
+        </div>
+      )}
+      {story.image && (
+        <Img onLoad={() => setLoaded(true)} image={story.image} crop />
+      )}
+      {loaded && story.isPublic === false && (
+        <div className="absolute text-white top-6 right-6 bg-gray-800 px-3 py-1 text-sm bg-opacity-70">
+          Visible only to you
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function (): JSX.Element {
   const stories = usePageData<typeof getPageData>();
 
@@ -55,16 +82,7 @@ export default function (): JSX.Element {
         {stories.map((story) => (
           <div key={story.id} className="rounded-xl overflow-hidden">
             <Link className="relative block" to={`/stories/${story.id}`}>
-              <div
-                className={`aspect-square${story.isPublic ? '' : ' grayscale'}`}
-              >
-                {story.image && <Img image={story.image} crop />}
-              </div>
-              {story.isPublic === false && (
-                <div className="absolute text-white top-6 right-6 bg-gray-800 px-3 py-1 text-sm bg-opacity-70">
-                  Visible only to you
-                </div>
-              )}
+              <StoryImage story={story} />
               <div className="absolute bottom-0 left-0 bg-gray-900 p-6 w-full space-y-1 opacity-95">
                 <div className="uppercase text-sm font-bold">{story.title}</div>
                 {story.duration && (
