@@ -94,7 +94,7 @@ export default function boot() {
     const updatedKeys = Object.keys(fields);
 
     // duration is currently the only thing we allow to be updated
-    // fron the client.
+    // fron the client, other than isPublic (see below)
     if (updatedKeys.length === 1 && updatedKeys[0] === 'duration') {
       return fields;
     }
@@ -106,6 +106,7 @@ export default function boot() {
     ) {
       const user = await User.findById(userId);
 
+      // Only admins can modify isPublic
       if (user && user.isAdmin) {
         return fields;
       }
@@ -120,6 +121,8 @@ export default function boot() {
         return story;
       }
 
+      // We only store the audio relative path and turn it
+      // into a full path at read time.
       return {
         ...story,
         audio: getPublicFileUrl(story.audio),
@@ -135,6 +138,9 @@ export default function boot() {
     return fields;
   });
 
+  // The rest of these model events implement a pseudo state
+  // machine that moves the story through the different stages
+  // of generation.
   Story.afterCreate(async (story) => {
     await story.update({
       state: getNextState(story.state),
