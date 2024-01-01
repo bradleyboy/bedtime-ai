@@ -34,7 +34,7 @@ Once you have all this information, return it in a JSON string with the keys: ti
   },
 ] as const;
 
-export async function generateStoryFromPrompt(prompt: string) {
+export async function generateStoryFromPrompt(prompt: string, userId?: string) {
   const completion = await openai.chat.completions.create({
     response_format: { type: 'json_object' },
     messages: [
@@ -45,6 +45,9 @@ export async function generateStoryFromPrompt(prompt: string) {
       },
     ],
     model: 'gpt-4-1106-preview',
+    // Send the Nokkio user ID through per OpenAI's best practices
+    // for safety: https://platform.openai.com/docs/guides/safety-best-practices/end-user-ids
+    user: userId,
   });
 
   const r = completion.choices[0].message.content;
@@ -66,7 +69,7 @@ export async function generateStoryFromPrompt(prompt: string) {
 }
 
 export function generateStory(story: Story) {
-  return generateStoryFromPrompt(story.prompt);
+  return generateStoryFromPrompt(story.prompt, story.userId);
 }
 
 export async function generateImage(story: Story) {

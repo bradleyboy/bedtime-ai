@@ -19,7 +19,7 @@ const listenForEnter: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
 };
 
 export default function Index(): JSX.Element {
-  const { logout, isAuthenticated } = useAuth();
+  const { logout, isAuthenticated, user } = useAuth();
   const [isSubmittable, setIsSubmittable] = useState(false);
   const { Form, isProcessing } = useForm(Story, {
     redirectOnSuccess: (story) => {
@@ -40,6 +40,17 @@ export default function Index(): JSX.Element {
           <div className="inline-flex">
             <SignInWithGoogleButton />
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (user.isBanned) {
+    return (
+      <div className="flex h-full items-center justify-center mx-6 md:mx-0">
+        <div className="w-96 bg-gray-900 rounded-md flex space-y-6 p-6 flex-col">
+          <div className="text-xl font-bold">Not authorized</div>
+          <p>You are no longer allowed to create stories.</p>
         </div>
       </div>
     );

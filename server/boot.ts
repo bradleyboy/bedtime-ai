@@ -25,12 +25,40 @@ function getNextState(state: Story['state']): Story['state'] {
   return 'ready';
 }
 
+async function isAdmin(userId: string | null): Promise<boolean> {
+  if (userId === null) {
+    return false;
+  }
+
+  const user = await User.findById(userId);
+  return user !== null && user.isAdmin;
+}
+
 export default function boot() {
   // All user operations happen in endpoints only, do not allow
   // the client to perform these or direct access to the data endpoints.
-  User.beforeFind(RESTRICT_TO_ENDPOINTS);
+  User.beforeFind(async ({ isTrusted, userId, query }) => {
+    if (isTrusted) {
+      return query;
+    }
+
+    if (await isAdmin(userId)) {
+      return query;
+    }
+
+    throw new NotAuthorizedError();
+  });
+
   User.beforeCreate(RESTRICT_TO_ENDPOINTS);
-  User.beforeUpdate(RESTRICT_TO_ENDPOINTS);
+
+  User.beforeUpdate(async ({ isTrusted, userId, fields }) => {
+    if (isTrusted || (await isAdmin(userId))) {
+      return fields;
+    }
+
+    throw new NotAuthorizedError();
+  });
+
   User.beforeDelete(RESTRICT_TO_ENDPOINTS);
 
   // Do not allow stories to be listed unless the public
@@ -71,20 +99,21 @@ export default function boot() {
       }
     }
 
-    // Fallback for when an admin is present, allow the query through
-    if (userId !== null) {
-      const user = await User.findById(userId);
-
-      if (user !== null && user.isAdmin) {
-        return query;
-      }
+    if (await isAdmin(userId)) {
+      return query;
     }
 
     // Everything else should not be allowed client-side
     throw new NotAuthorizedError();
   });
 
-  Story.beforeDelete(RESTRICT_TO_ENDPOINTS);
+  Story.beforeDelete(async ({ isTrusted, userId }) => {
+    if (isTrusted || (await isAdmin(userId))) {
+      return;
+    }
+
+    throw new NotAuthorizedError();
+  });
 
   Story.beforeUpdate(async ({ isTrusted, userId, fields }) => {
     if (isTrusted) {
@@ -99,17 +128,14 @@ export default function boot() {
       return fields;
     }
 
+    // Only admins can make a story public
     if (
       updatedKeys.length === 1 &&
       updatedKeys[0] === 'isPublic' &&
-      userId !== null
+      userId !== null &&
+      (await isAdmin(userId))
     ) {
-      const user = await User.findById(userId);
-
-      // Only admins can modify isPublic
-      if (user && user.isAdmin) {
-        return fields;
-      }
+      return fields;
     }
 
     throw new NotAuthorizedError();
@@ -130,8 +156,14 @@ export default function boot() {
     });
   });
 
-  Story.beforeCreate(({ fields, userId }) => {
+  Story.beforeCreate(async ({ fields, userId }) => {
     if (!userId) {
+      throw new NotAuthorizedError();
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user || user.isBanned) {
       throw new NotAuthorizedError();
     }
 

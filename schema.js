@@ -6,6 +6,7 @@ module.exports = function ({ defineModel, types }) {
     name: types.string(),
     picture: types.string(),
     isAdmin: types.bool(false),
+    isBanned: types.bool(false),
   });
 
   const Story = defineModel('Story', {
