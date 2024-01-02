@@ -12,7 +12,15 @@ export default function Footer() {
         .
       </div>
       <div>
-        Built with{' '}
+        Built by{' '}
+        <a
+          href="https://twitter.com/bradleyboy"
+          className="underline"
+          target="_blank"
+        >
+          @bradleyboy
+        </a>{' '}
+        with{' '}
         <a href="https://nokk.io" className="underline" target="_blank">
           Nokkio
         </a>
