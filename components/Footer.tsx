@@ -4,10 +4,13 @@ export default function Footer() {
   return (
     <div className="px-6 py-3 lg:px-12 lg:py-4 text-sm bg-gray-900 flex-col lg:flex-row space-y-3 lg:space-y-0 flex justify-between">
       <div>
-        Made with <strong>Tonight's Bedtime Story</strong>, an experiment with
-        OpenAI's API.{' '}
+        Tonight's Bedtime Story:{' '}
+        <Link to="/" className="underline">
+          View other stories
+        </Link>{' '}
+        or{' '}
         <Link to="/stories/create" className="underline">
-          Create your own bedtime tale
+          create your own
         </Link>
         .
       </div>
@@ -23,8 +26,8 @@ export default function Footer() {
         with{' '}
         <a href="https://nokk.io" className="underline" target="_blank">
           Nokkio
-        </a>
-        .
+        </a>{' '}
+        and the OpenAI API.
       </div>
     </div>
   );

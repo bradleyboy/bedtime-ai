@@ -107,15 +107,18 @@ const AudioPlayer = forwardRef<HTMLAudioElement, { story: Story }>(
         setDuration(ref.current?.duration);
       }
 
-      ref.current?.addEventListener('timeupdate', () => {
+      const handleTimeUpdate = () => {
         setCurrentTime(ref.current?.currentTime!);
-      });
+      };
 
-      ref.current?.addEventListener('loadedmetadata', () => {
+      const handleMetadata = () => {
         if (typeof ref.current?.duration === 'number') {
           setDuration(ref.current?.duration);
         }
-      });
+      };
+
+      ref.current?.addEventListener('timeupdate', handleTimeUpdate);
+      ref.current?.addEventListener('loadedmetadata', handleMetadata);
 
       const spaceHandler = (e: KeyboardEvent) => {
         if (ref.current) {
@@ -135,7 +138,11 @@ const AudioPlayer = forwardRef<HTMLAudioElement, { story: Story }>(
 
       window.addEventListener('keydown', spaceHandler);
 
-      return () => window.removeEventListener('keydown', spaceHandler);
+      return () => {
+        window.removeEventListener('keydown', spaceHandler);
+        ref.current?.removeEventListener('timeupdate', handleTimeUpdate);
+        ref.current?.removeEventListener('loadedmetadata', handleMetadata);
+      };
     }, []);
 
     useEffect(() => {
@@ -218,6 +225,21 @@ export default function () {
   const story = usePageData<typeof getPageData>();
   const ref = useRef<HTMLAudioElement>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    const handler = () => {
+      setIsPlaying(!ref.current?.paused);
+    };
+
+    ref.current?.addEventListener('play', handler);
+    ref.current?.addEventListener('pause', handler);
+
+    return () => {
+      ref.current?.removeEventListener('play', handler);
+      ref.current?.removeEventListener('pause', handler);
+    };
+  }, []);
 
   if (!story) {
     return <p>Not found</p>;
@@ -238,6 +260,14 @@ export default function () {
           {!imageLoaded && (
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
               <Spinner />
+            </div>
+          )}
+          {imageLoaded && !isPlaying && (
+            <div
+              onClick={() => handleTogglePlayback(ref.current)}
+              className="bg-gray-900 cursor-pointer p-6 rounded-full bg-opacity-50 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+            >
+              <PlayIcon />
             </div>
           )}
           <Img
