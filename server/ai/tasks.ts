@@ -2,9 +2,17 @@ import OpenAI from 'npm:openai';
 import { Story } from '@nokkio/magic';
 import { getSecret, writeFile, writeImage } from '@nokkio/endpoints';
 
-const openai = new OpenAI({
-  apiKey: getSecret('openAIApiKey'),
-});
+let _openai: OpenAI;
+
+function openai() {
+  if (!_openai) {
+    _openai = new OpenAI({
+      apiKey: getSecret('openAIApiKey'),
+    });
+  }
+
+  return _openai;
+}
 
 const PROMPT_COMMON = [
   {
@@ -36,7 +44,7 @@ Once you have all this information, return it in a JSON string with the keys: ti
 ] as const;
 
 export async function generateStoryFromPrompt(prompt: string, userId?: string) {
-  const completion = await openai.chat.completions.create({
+  const completion = await openai().chat.completions.create({
     response_format: { type: 'json_object' },
     messages: [
       ...PROMPT_COMMON,
@@ -78,7 +86,7 @@ export async function generateImage(story: Story) {
     throw new Error('story does not yet have an image prompt');
   }
 
-  const image = await openai.images.generate({
+  const image = await openai().images.generate({
     model: 'dall-e-3',
     prompt: `In a vibrant, colorful, cinematic illustration style: ${story.imagePrompt}`,
     size: '1792x1024',
@@ -109,7 +117,7 @@ export async function generateAudio(story: Story): Promise<string> {
     throw new Error('story does not yet have generated text');
   }
 
-  const audio = await openai.audio.speech.create({
+  const audio = await openai().audio.speech.create({
     model: 'tts-1',
     voice: 'nova',
     input: story.text,

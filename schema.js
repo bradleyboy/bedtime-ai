@@ -2,7 +2,7 @@
 module.exports = function ({ defineModel, types }) {
   const User = defineModel('User', {
     sub: types.string().unique(),
-    email: types.string(),
+    email: types.string().filterable(),
     name: types.string(),
     picture: types.string(),
     isAdmin: types.bool(false),

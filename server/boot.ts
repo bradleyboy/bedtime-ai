@@ -156,7 +156,11 @@ export default function boot() {
     });
   });
 
-  Story.beforeCreate(async ({ fields, userId }) => {
+  Story.beforeCreate(async ({ isTrusted, fields, userId }) => {
+    if (isTrusted) {
+      return fields;
+    }
+
     if (!userId) {
       throw new NotAuthorizedError();
     }
