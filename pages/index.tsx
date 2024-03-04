@@ -85,11 +85,11 @@ export default function (): JSX.Element {
               <StoryImage story={story} />
               <div className="absolute bottom-0 left-0 bg-gray-900 p-6 w-full space-y-1 opacity-95">
                 <div className="uppercase text-sm font-bold">{story.title}</div>
-                {story.duration && (
-                  <div className="mono text-sm text-gray-400">
-                    {secondsToHumanReadable(story.duration)}
-                  </div>
-                )}
+                <div className="mono text-sm text-gray-400">
+                  {story.duration
+                    ? secondsToHumanReadable(story.duration)
+                    : '3:00'}
+                </div>
               </div>
             </Link>
           </div>
