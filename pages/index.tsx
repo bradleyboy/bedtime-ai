@@ -90,11 +90,13 @@ function FeaturedStory({ story }: { story: Story }) {
         <div className="lg:text-xl xl:text-2xl font-bold">{story.title}</div>
         <p>{story.summary}</p>
         <Link
-          className="inline-block rounded bg-gray-600 px-4 py-2 text-sm xl:text-lg hover:bg-gray-700 transition-colors"
+          className="inline-flex items-center justify-between rounded bg-gray-600 px-3 py-2 text-sm xl:text-lg hover:bg-gray-700 transition-colors"
           to={`/stories/${story.id}`}
         >
-          Listen now (
-          {story.duration ? secondsToHumanReadable(story.duration) : '3:00'})
+          Listen now{' '}
+          <span className="bg-gray-900 px-1 py-1.5 rounded ml-2 text-xs items-center">
+            {story.duration ? secondsToHumanReadable(story.duration) : '3:00'}
+          </span>
         </Link>
       </div>
     </div>
