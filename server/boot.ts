@@ -5,7 +5,7 @@ import {
   isOrConditionBlock,
 } from '@nokkio/magic';
 import { getPublicFileUrl } from '@nokkio/endpoints';
-import { NotAuthorizedError } from '@nokkio/errors';
+import { NotAuthorizedError, BadRequestError } from '@nokkio/errors';
 
 import {
   generateImage,
@@ -161,6 +161,12 @@ export default function boot() {
       return fields;
     }
 
+    // Can only be set by the scheduled post, which is created
+    // in the trusted context (which would have already returned above)
+    if (fields.isDailyStory === true) {
+      throw new BadRequestError();
+    }
+
     if (!userId) {
       throw new NotAuthorizedError();
     }
@@ -193,12 +199,14 @@ export default function boot() {
         const {
           story: text,
           title,
+          summary,
           image_prompt: imagePrompt,
         } = await generateStory(story);
 
         await story.update({
           text,
           title,
+          summary,
           imagePrompt,
           state: getNextState(story.state),
         });

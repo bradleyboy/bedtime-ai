@@ -23,6 +23,7 @@ module.exports = function ({ defineModel, types }) {
       .filterable(),
     imagePrompt: types.text(null),
     title: types.string(null),
+    summary: types.text(null),
     text: types.text(null),
     duration: types.number(null),
     image: types.image(null),
@@ -30,6 +31,7 @@ module.exports = function ({ defineModel, types }) {
     attempt: types.number(1),
     completedAt: types.datetime(null),
     isPublic: types.bool(false),
+    isDailyStory: types.bool(false),
   });
 
   // Enforce model event ordering only at the record

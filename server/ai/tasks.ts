@@ -2,24 +2,16 @@ import OpenAI from 'npm:openai';
 import { Story } from '@nokkio/magic';
 import { getSecret, writeFile, writeImage } from '@nokkio/endpoints';
 
-let _openai: OpenAI;
-
-function openai() {
-  if (!_openai) {
-    _openai = new OpenAI({
-      apiKey: getSecret('openAIApiKey'),
-    });
-  }
-
-  return _openai;
-}
+const openai = new OpenAI({
+  apiKey: getSecret('openAIApiKey'),
+});
 
 const PROMPT_COMMON = [
   {
     role: 'system',
     content: `You are a helpful assistant who works with parents to create unique, engaging, age appropriate bedtime stories that help a child relax and fall asleep.
 
-When given a prompt, you will create the story, generate a title for the story, and generate an image prompt that will later be used to create a unique cover image for the story. The guidelines for the story are below.
+When given a prompt, you will create the story, generate a title for the story, generate a short summary, and generate an image prompt that will later be used to create a unique cover image for the story. The guidelines for the story are below.
 
 When creating the story, follow these rules:
 - it should be a soothing, uplifting tale appropriate to children of all ages.
@@ -28,13 +20,15 @@ When creating the story, follow these rules:
 
 Once the story is created, generating a title that is less than 100 characters. When adding the title to the response, write only the title, do not add any explaination before or after in your response. Do not wrap the title in any punctuation.
 
+For the summary, create a 1-2 sentence overview of the story that draws the reader in without giving away the entire story.
+
 Finally, create an image prompt following these directions:
 - The prompt should create an image with a modern, simple, flat cartoon style that appeals to young children.
 - IMPORTANT: make sure the prompt results in an image that is appropriate for children.
 - Children can often spot an AI generated image, try to prevent that by keeping the image simple and not cluttering the scene up with too many concepts at once.
 - Return ONLY the prompt, do not include any text that is not part of the prompt.
 
-Once you have all this information, return it in a JSON string with the keys: title, story, image_prompt. You MUST return valid JSON. Do NOT wrap the json output in \`\`\`json ... \`\`\`!
+Once you have all this information, return it in a JSON string with the keys: title, story, summary, image_prompt. You MUST return valid JSON. Do NOT wrap the json output in \`\`\`json ... \`\`\`!
       `,
   },
   {
@@ -44,7 +38,7 @@ Once you have all this information, return it in a JSON string with the keys: ti
 ] as const;
 
 export async function generateStoryFromPrompt(prompt: string, userId?: string) {
-  const completion = await openai().chat.completions.create({
+  const completion = await openai.chat.completions.create({
     response_format: { type: 'json_object' },
     messages: [
       ...PROMPT_COMMON,
@@ -69,6 +63,7 @@ export async function generateStoryFromPrompt(prompt: string, userId?: string) {
     return JSON.parse(r) as {
       title: string;
       story: string;
+      summary: string;
       image_prompt: string;
     };
   } catch (e) {
@@ -86,7 +81,7 @@ export async function generateImage(story: Story) {
     throw new Error('story does not yet have an image prompt');
   }
 
-  const image = await openai().images.generate({
+  const image = await openai.images.generate({
     model: 'dall-e-3',
     prompt: `In a vibrant, colorful, cinematic illustration style: ${story.imagePrompt}`,
     size: '1792x1024',
@@ -117,7 +112,7 @@ export async function generateAudio(story: Story): Promise<string> {
     throw new Error('story does not yet have generated text');
   }
 
-  const audio = await openai().audio.speech.create({
+  const audio = await openai.audio.speech.create({
     model: 'tts-1',
     voice: 'nova',
     input: story.text,
