@@ -12,5 +12,6 @@ export default async function () {
   await user.createStory({
     prompt: 'tell me a bedtime story',
     isPublic: true,
+    isDailyStory: true,
   });
 }
