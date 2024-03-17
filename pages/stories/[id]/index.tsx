@@ -90,35 +90,20 @@ const AudioPlayer = forwardRef<HTMLAudioElement, { story: Story }>(
   function AudioPlayer({ story }, forwardedRef) {
     const src = story.audio;
     const ref = useRef<HTMLAudioElement>(null);
+    const duration = story.duration;
 
     useImperativeHandle(forwardedRef, () => ref.current as HTMLAudioElement);
 
-    const [duration, setDuration] = useState<number | undefined>(
-      typeof ref.current?.duration === 'number'
-        ? ref.current.duration
-        : undefined,
-    );
     const [currentTime, setCurrentTime] = useState<number>(0);
 
-    const p = duration === undefined ? 0 : (currentTime / duration) * 100;
+    const p = duration === null ? 0 : (currentTime / duration) * 100;
 
     useEffect(() => {
-      if (typeof ref.current?.duration === 'number') {
-        setDuration(ref.current?.duration);
-      }
-
       const handleTimeUpdate = () => {
         setCurrentTime(ref.current?.currentTime!);
       };
 
-      const handleMetadata = () => {
-        if (typeof ref.current?.duration === 'number') {
-          setDuration(ref.current?.duration);
-        }
-      };
-
       ref.current?.addEventListener('timeupdate', handleTimeUpdate);
-      ref.current?.addEventListener('loadedmetadata', handleMetadata);
 
       const spaceHandler = (e: KeyboardEvent) => {
         if (ref.current) {
@@ -141,22 +126,33 @@ const AudioPlayer = forwardRef<HTMLAudioElement, { story: Story }>(
       return () => {
         window.removeEventListener('keydown', spaceHandler);
         ref.current?.removeEventListener('timeupdate', handleTimeUpdate);
-        ref.current?.removeEventListener('loadedmetadata', handleMetadata);
       };
     }, []);
 
     useEffect(() => {
-      if (typeof duration !== 'number') {
+      if (story.duration !== null) {
         return;
       }
 
-      // In an ideal world, we would parse the duration on the backend
-      // and store this at creation time, b
-      const roundedDuration = Math.round(duration);
-      if (!isNaN(roundedDuration) && roundedDuration !== story.duration) {
-        story.update({ duration: roundedDuration });
-      }
-    }, [duration]);
+      const handleMetadata = () => {
+        const duration = ref.current?.duration;
+
+        if (!duration) {
+          return;
+        }
+
+        const roundedDuration = Math.round(duration);
+        if (!isNaN(roundedDuration)) {
+          story.update({ duration: roundedDuration });
+        }
+      };
+
+      ref.current?.addEventListener('loadedmetadata', handleMetadata);
+
+      return () => {
+        ref.current?.removeEventListener('loadedmetadata', handleMetadata);
+      };
+    }, [story.duration]);
 
     if (src === null) {
       return null;
