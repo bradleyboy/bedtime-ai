@@ -1,15 +1,30 @@
 import { useState, ChangeEvent, KeyboardEventHandler } from 'react';
 
 import type { PageMetadataFunction } from '@nokkio/router';
+import { usePageData } from '@nokkio/router';
 import { Story } from '@nokkio/magic';
 import { useForm, Textarea } from '@nokkio/forms';
 import { useAuth } from '@nokkio/auth';
+import { Img } from '@nokkio/image';
 
 import SignInWithGoogleButton from 'components/SignInWithGoogleButton';
 
 export const getPageMetadata: PageMetadataFunction = () => {
-  return { title: "Tonight's Bedtime Story" };
+  return { title: "Tonight's Bedtime Story: Create a story" };
 };
+
+export async function getPageData() {
+  const params = new URLSearchParams(location.search);
+  const from = params.get('from');
+
+  if (from) {
+    return {
+      basedOn: await Story.findById(from),
+    };
+  }
+
+  return { basedOn: null };
+}
 
 const listenForEnter: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
   if (e.key === 'Enter') {
@@ -19,9 +34,16 @@ const listenForEnter: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
 };
 
 export default function Index(): JSX.Element {
+  const { basedOn } = usePageData<typeof getPageData>();
   const { logout, isAuthenticated, user } = useAuth();
   const [isSubmittable, setIsSubmittable] = useState(false);
   const { Form, isProcessing } = useForm(Story, {
+    initialValues:
+      basedOn !== null
+        ? {
+            parentStoryId: basedOn.id,
+          }
+        : undefined,
     redirectOnSuccess: (story) => {
       return `/stories/${story.id}/processing`;
     },
@@ -64,6 +86,21 @@ export default function Index(): JSX.Element {
       >
         Tonight's Bedtime Story
       </h1>
+      {basedOn !== null && (
+        <div className="px-6 lg:px-12 flex space-x-4">
+          <Img className="h-24 w-24" crop image={basedOn.image} />{' '}
+          <div className="space-y-1 flex justify-center flex-col">
+            <div className="uppercase text-xs text-gray-400">
+              Creating a new story based on
+            </div>
+            <div className="text-lg">{basedOn.title}</div>
+            <div className="text-gray-400">
+              Enter the changes you'd like to make below, and a new version will
+              be created.
+            </div>
+          </div>
+        </div>
+      )}
 
       <Form className="flex flex-col flex-1">
         <Textarea
@@ -72,7 +109,11 @@ export default function Index(): JSX.Element {
           autoFocus
           disabled={isProcessing}
           name="prompt"
-          placeholder={`What's the subject of tonight's story? You can also try: "make up a story for me"`}
+          placeholder={
+            basedOn === null
+              ? `What's the subject of tonight's story? You can also try: "make up a story for me"`
+              : 'Update the story so that...'
+          }
           className="leading-relaxed lg:leading-relaxed resize-none disabled:text-gray-600 flex-1 mx-6 lg:mx-12 text-gray-200 bg-transparent text-2xl lg:text-5xl focus:outline-none rounded-md"
         />
         <button

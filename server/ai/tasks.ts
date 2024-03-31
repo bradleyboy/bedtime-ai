@@ -18,7 +18,7 @@ When creating the story, follow these rules:
 - this story should be between 500 and 750 words long, DO NOT return stories outside of shorter or longer than this.
 - If at all possible, create the story in the same language that the prompt is in. For example, if the user prompts in French, write the story in French. If you are unsure or do not support that language, default to English.
 
-Once the story is created, generating a title that is less than 100 characters. When adding the title to the response, write only the title, do not add any explaination before or after in your response. Do not wrap the title in any punctuation.
+Once the story is created, generating a title that is less than 100 characters. When adding the title to the response, write only the title, do not add any explanation before or after in your response. Do not wrap the title in any punctuation.
 
 For the summary, create a 1-2 sentence overview of the story that draws the reader in without giving away the entire story.
 
@@ -37,20 +37,54 @@ Once you have all this information, return it in a JSON string with the keys: ti
   },
 ] as const;
 
-export async function generateStoryFromPrompt(prompt: string, userId?: string) {
+export async function generateStory(story: Story) {
+  const promptHistory: Array<{ role: 'user' | 'assistant'; content: string }> =
+    [];
+
+  // We pass a seed for determinism, which is important for stories created
+  // later based off of this story.
+  let seed = story.createdAt.getTime();
+
+  // If the story was forked from another story, backfill the prompt history
+  if (story.parentStoryId) {
+    const parent = await Story.findById(story.parentStoryId);
+
+    if (parent) {
+      // Use the seed of the original story for better determinism
+      seed = parent.createdAt.getTime();
+
+      promptHistory.push({
+        role: 'user',
+        content: parent.prompt,
+      });
+
+      promptHistory.push({
+        role: 'assistant',
+        content: JSON.stringify({
+          title: parent.title,
+          summary: parent.summary,
+          image_prompt: parent.imagePrompt,
+          story: parent.text,
+        }),
+      });
+    }
+  }
+
   const completion = await openai.chat.completions.create({
     response_format: { type: 'json_object' },
+    seed,
     messages: [
       ...PROMPT_COMMON,
+      ...promptHistory,
       {
         role: 'user',
-        content: prompt,
+        content: story.prompt,
       },
     ],
     model: 'gpt-4-1106-preview',
     // Send the Nokkio user ID through per OpenAI's best practices
     // for safety: https://platform.openai.com/docs/guides/safety-best-practices/end-user-ids
-    user: userId,
+    user: story.userId,
   });
 
   const r = completion.choices[0].message.content;
@@ -70,10 +104,6 @@ export async function generateStoryFromPrompt(prompt: string, userId?: string) {
     console.log('parsing JSON from OpenAI failed', r);
     throw e;
   }
-}
-
-export function generateStory(story: Story) {
-  return generateStoryFromPrompt(story.prompt, story.userId);
 }
 
 export async function generateImage(story: Story) {

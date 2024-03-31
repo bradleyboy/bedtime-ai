@@ -9,7 +9,7 @@ import {
 } from 'react';
 
 import type { PageDataArgs, PageMetadataFunction } from '@nokkio/router';
-import { usePageData } from '@nokkio/router';
+import { usePageData, Link } from '@nokkio/router';
 import { Story } from '@nokkio/magic';
 import { Img, createImageURL } from '@nokkio/image';
 import { useAuth } from '@nokkio/auth';
@@ -39,6 +39,25 @@ export const getPageMetadata: PageMetadataFunction<typeof getPageData> = ({
     },
   };
 };
+
+function CopyIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className="w-4 h-4"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"
+      />
+    </svg>
+  );
+}
 
 function PlayIcon() {
   return (
@@ -86,109 +105,114 @@ function handleTogglePlayback(audio: HTMLAudioElement | null) {
   }
 }
 
-const AudioPlayer = forwardRef<HTMLAudioElement, { story: Story }>(
-  function AudioPlayer({ story }, forwardedRef) {
-    const src = story.audio;
-    const ref = useRef<HTMLAudioElement>(null);
-    const duration = story.duration;
+const AudioPlayer = forwardRef<
+  HTMLAudioElement,
+  { story: Story; onTimeUpdate?: (t: number) => void }
+>(function AudioPlayer({ story, onTimeUpdate }, forwardedRef) {
+  const src = story.audio;
+  const ref = useRef<HTMLAudioElement>(null);
+  const duration = story.duration;
 
-    useImperativeHandle(forwardedRef, () => ref.current as HTMLAudioElement);
+  useImperativeHandle(forwardedRef, () => ref.current as HTMLAudioElement);
 
-    const [currentTime, setCurrentTime] = useState<number>(0);
+  const [currentTime, setCurrentTime] = useState<number>(0);
 
-    const p = duration === null ? 0 : (currentTime / duration) * 100;
+  const p = duration === null ? 0 : (currentTime / duration) * 100;
 
-    useEffect(() => {
-      const handleTimeUpdate = () => {
-        setCurrentTime(ref.current?.currentTime!);
-      };
+  useEffect(() => {
+    const handleTimeUpdate = () => {
+      setCurrentTime(ref.current?.currentTime!);
 
-      ref.current?.addEventListener('timeupdate', handleTimeUpdate);
+      if (onTimeUpdate) {
+        onTimeUpdate(ref.current?.currentTime!);
+      }
+    };
 
-      const spaceHandler = (e: KeyboardEvent) => {
-        if (ref.current) {
-          if (e.key === ' ') {
-            handleTogglePlayback(ref.current);
-          }
+    ref.current?.addEventListener('timeupdate', handleTimeUpdate);
 
-          if (e.key === 'ArrowLeft') {
-            ref.current.currentTime -= 10;
-          }
-
-          if (e.key === 'ArrowRight') {
-            ref.current.currentTime += 10;
-          }
+    const spaceHandler = (e: KeyboardEvent) => {
+      if (ref.current) {
+        if (e.key === ' ') {
+          handleTogglePlayback(ref.current);
         }
-      };
 
-      window.addEventListener('keydown', spaceHandler);
+        if (e.key === 'ArrowLeft') {
+          ref.current.currentTime -= 10;
+        }
 
-      return () => {
-        window.removeEventListener('keydown', spaceHandler);
-        ref.current?.removeEventListener('timeupdate', handleTimeUpdate);
-      };
-    }, []);
+        if (e.key === 'ArrowRight') {
+          ref.current.currentTime += 10;
+        }
+      }
+    };
 
-    useEffect(() => {
-      if (story.duration !== null) {
+    window.addEventListener('keydown', spaceHandler);
+
+    return () => {
+      window.removeEventListener('keydown', spaceHandler);
+      ref.current?.removeEventListener('timeupdate', handleTimeUpdate);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (story.duration !== null) {
+      return;
+    }
+
+    const handleMetadata = () => {
+      const duration = ref.current?.duration;
+
+      if (!duration) {
         return;
       }
 
-      const handleMetadata = () => {
-        const duration = ref.current?.duration;
+      const roundedDuration = Math.round(duration);
+      if (!isNaN(roundedDuration)) {
+        story.update({ duration: roundedDuration });
+      }
+    };
 
-        if (!duration) {
-          return;
-        }
+    ref.current?.addEventListener('loadedmetadata', handleMetadata);
 
-        const roundedDuration = Math.round(duration);
-        if (!isNaN(roundedDuration)) {
-          story.update({ duration: roundedDuration });
-        }
-      };
+    return () => {
+      ref.current?.removeEventListener('loadedmetadata', handleMetadata);
+    };
+  }, [story.duration]);
 
-      ref.current?.addEventListener('loadedmetadata', handleMetadata);
+  if (src === null) {
+    return null;
+  }
 
-      return () => {
-        ref.current?.removeEventListener('loadedmetadata', handleMetadata);
-      };
-    }, [story.duration]);
-
-    if (src === null) {
-      return null;
-    }
-
-    return (
-      <div>
-        <div className="px-6 lg:px-12 pt-6 text-gray-50 flex items-center justify-between">
-          <div
-            onClick={() => handleTogglePlayback(ref.current)}
-            className="cursor-pointer"
-          >
-            {ref.current?.paused && <PlayIcon />}
-            {!ref.current?.paused && <PauseIcon />}
+  return (
+    <div>
+      <div className="px-6 lg:px-12 pt-6 text-gray-50 flex items-center justify-between">
+        <div
+          onClick={() => handleTogglePlayback(ref.current)}
+          className="cursor-pointer"
+        >
+          {ref.current?.paused && <PlayIcon />}
+          {!ref.current?.paused && <PauseIcon />}
+        </div>
+        {duration && duration > 0 && (
+          <div className="font-mono text-sm">
+            {secondsToHumanReadable(currentTime)} /{' '}
+            {duration && secondsToHumanReadable(duration)}
           </div>
-          {duration && duration > 0 && (
-            <div className="font-mono text-sm">
-              {secondsToHumanReadable(currentTime)} /{' '}
-              {duration && secondsToHumanReadable(duration)}
-            </div>
-          )}
-          <audio ref={ref}>
-            <source src={src} type="audio/mpeg" />
-          </audio>
-        </div>
-
-        <div className={`mt-5 w-full bg-gray-700 h-2`}>
-          <div
-            style={{ width: `${p}%` }}
-            className="transition-all ease-linear bg-gray-400 h-full"
-          ></div>
-        </div>
+        )}
+        <audio ref={ref}>
+          <source src={src} type="audio/mpeg" />
+        </audio>
       </div>
-    );
-  },
-);
+
+      <div className={`mt-5 w-full bg-gray-700 h-2`}>
+        <div
+          style={{ width: `${p}%` }}
+          className="transition-all ease-linear bg-gray-400 h-full"
+        ></div>
+      </div>
+    </div>
+  );
+});
 
 function AdminToolbar({ story }: { story: Story }) {
   const { isAuthenticated, user } = useAuth();
@@ -222,6 +246,7 @@ export default function () {
   const ref = useRef<HTMLAudioElement>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showCopyPrompt, setShowCopyPrompt] = useState(false);
 
   useEffect(() => {
     const handler = () => {
@@ -273,9 +298,25 @@ export default function () {
             className="h-0 min-h-full object-contain"
           />
           <AdminToolbar story={story} />
+          {showCopyPrompt && (
+            <div className="absolute bottom-3">
+              <Link
+                to={`/stories/create?from=${story.id}`}
+                className="flex items-center space-x-1 text-sm p-3 text-gray-300 hover:text-gray-50 bg-gray-900 rounded-md"
+              >
+                <CopyIcon /> <span>Create new story based on this one</span>
+              </Link>
+            </div>
+          )}
         </div>
         <div>
-          <AudioPlayer ref={ref} story={story} />
+          <AudioPlayer
+            ref={ref}
+            story={story}
+            onTimeUpdate={(t) => {
+              setShowCopyPrompt(t > 10);
+            }}
+          />
         </div>
         <Footer />
       </div>

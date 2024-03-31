@@ -38,6 +38,7 @@ module.exports = function ({ defineModel, types }) {
   // level to reduce latency / contention.
   Story.orderEventsByRecord();
 
+  Story.belongsTo(Story, { optional: true, name: 'parentStory' });
   User.hasMany(Story);
   User.actAsAuth({ type: 'custom' });
 
