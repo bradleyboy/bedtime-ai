@@ -88,7 +88,9 @@ export default function Index(): JSX.Element {
       </h1>
       {basedOn !== null && (
         <div className="px-6 lg:px-12 flex space-x-4">
-          <Img className="h-24 w-24" crop image={basedOn.image} />{' '}
+          <div>
+            <Img className="h-24 w-24" crop image={basedOn.image} />
+          </div>
           <div className="space-y-1 flex justify-center flex-col">
             <div className="uppercase text-xs text-gray-400">
               Creating a new story based on
