@@ -8,6 +8,15 @@ gtag('js', new Date());
 gtag('config', 'G-9K0VDCYFPJ');
 `;
 
+const siteMetadata = `
+{
+  "@context" : "https://schema.org",
+  "@type" : "WebSite",
+  "name" : "Tonight's Bedtime Story",
+  "url" : "https://bedtime-ai.nokk.io/"
+}
+`;
+
 export default function Document({ children }: DocumentProps): JSX.Element {
   return (
     <Html lang="en">
@@ -33,6 +42,11 @@ export default function Document({ children }: DocumentProps): JSX.Element {
           nonce={NOKKIO_CSP_NONCE}
           src="https://accounts.google.com/gsi/client"
           async
+        ></script>
+        <script
+          type="application/ld+json"
+          nonce={NOKKIO_CSP_NONCE}
+          dangerouslySetInnerHTML={{ __html: siteMetadata }}
         ></script>
       </Head>
       <Body className="bg-gray-800">
