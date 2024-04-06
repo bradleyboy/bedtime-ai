@@ -59,7 +59,7 @@ export default function Index(): JSX.Element {
         <div className="w-96 bg-gray-900 rounded-md flex space-y-6 p-6 flex-col">
           <div className="text-xl font-bold">Login to continue</div>
           <p>Authenticate with Google to create your first story.</p>
-          <div className="inline-flex">
+          <div className="inline-flex h-[44px]">
             <SignInWithGoogleButton />
           </div>
         </div>
