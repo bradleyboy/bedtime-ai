@@ -50,7 +50,10 @@ export async function getPageData({ auth }: PageDataArgs) {
 }
 
 export const getPageMetadata: PageMetadataFunction<typeof getPageData> = () => {
-  return { title: "Tonight's Bedtime Story: All stories" };
+  return {
+    title:
+      "Tonight's Bedtime Story: AI-powered bedtime stories generated daily",
+  };
 };
 
 function StoryImage({ story, crop = true }: { story: Story; crop?: boolean }) {

@@ -48,6 +48,10 @@ export default function Document({ children }: DocumentProps): JSX.Element {
           nonce={NOKKIO_CSP_NONCE}
           dangerouslySetInnerHTML={{ __html: siteMetadata }}
         ></script>
+        <meta
+          name="description"
+          content="Tonight's Bedtime Story generates short, compelling bedtime stories for children of all ages using AI. Stories include a cover image and an audio track. You can even generate your own bedtime story by providing a simple prompt."
+        />
       </Head>
       <Body className="bg-gray-800">
         <div id="main">{children}</div>

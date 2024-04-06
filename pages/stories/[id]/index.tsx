@@ -33,6 +33,11 @@ export const getPageMetadata: PageMetadataFunction<typeof getPageData> = ({
 
   return {
     title: `${pageData.title} - Tonight's Bedtime Story`,
+    meta: {
+      description: `Tonight's Bedtime Story: ${
+        pageData.summary ?? pageData.title
+      }`,
+    },
     openGraph: {
       image: createImageURL(pageData.image!),
       audio: pageData.audio!,
