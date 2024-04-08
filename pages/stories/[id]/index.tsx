@@ -292,22 +292,20 @@ function ShowRelatedStories({ story }: { story: Story }) {
 
   return (
     <div className="absolute top-0 bottom-0 left-0 right-0 bg-gray-900 bg-opacity-75 flex flex-col items-center justify-center">
-      <div className="mb-6">More stories like this</div>
-      <div className="grid grid-col-1 md:grid-cols-2 gap-6">
-        {relatedStories.map((story, idx) => (
+      <div className="hidden md:block">More stories like this</div>
+      <div className="grid grid-cols-2 gap-6 p-6">
+        {relatedStories.map((story) => (
           <Link
             key={story.id}
             to={`/stories/${story.id}`}
-            className={`relative flex flex-col bg-gray-900 w-[250px] rounded overflow-hidden border border-transparent hover:border-gray-600 transition-colors${
-              idx > 1 ? ' hidden md:block' : ''
-            }`}
+            className={`relative flex flex-col w-full md:w-[250px] text-sm md:text-base rounded overflow-hidden border border-transparent hover:border-gray-600 transition-colors`}
           >
             <Img
               image={story.image}
               crop
               className="saturate-50 hover:saturate-100 transition"
             />
-            <div className="absolute bottom-0 left-0 right-0 bg-gray-900 px-3 py-4">
+            <div className="absolute bottom-0 left-0 right-0 bg-gray-900 bg-opacity-90 px-2 py-3 md:px-3 md:py-4">
               {story.title}
             </div>
           </Link>
