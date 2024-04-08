@@ -184,7 +184,6 @@ async function getEmbeddingsForStory(story: Story): Promise<Array<number>> {
   const result = await openai.embeddings.create({
     input: story.text,
     model: 'text-embedding-3-small',
-    // @ts-expect-error: Types are not up to date here
     dimensions: 512,
   });
 
