@@ -11,6 +11,7 @@ import {
 import type { PageDataArgs, PageMetadataFunction } from '@nokkio/router';
 import { usePageData, Link } from '@nokkio/router';
 import { Story } from '@nokkio/magic';
+import type { StoryWith } from '@nokkio/magic';
 import { Img, createImageURL } from '@nokkio/image';
 import { useAuth } from '@nokkio/auth';
 import { makeRequest } from '@nokkio/endpoints';
@@ -22,7 +23,7 @@ import { secondsToHumanReadable } from 'utils/media';
 type PageParams = { id: string };
 
 export async function getPageData({ params }: PageDataArgs<PageParams>) {
-  return Story.findById(params.id);
+  return Story.findById(params.id, { with: ['user'] });
 }
 
 export const getPageMetadata: PageMetadataFunction<typeof getPageData> = ({
@@ -154,6 +155,19 @@ const AudioPlayer = forwardRef<
         }
       }
     };
+
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('seekbackward', function () {
+        if (ref.current) {
+          ref.current.currentTime -= 10;
+        }
+      });
+      navigator.mediaSession.setActionHandler('seekforward', function () {
+        if (ref.current) {
+          ref.current.currentTime += 10;
+        }
+      });
+    }
 
     window.addEventListener('keydown', spaceHandler);
 
@@ -315,6 +329,25 @@ function ShowRelatedStories({ story }: { story: Story }) {
   );
 }
 
+function setupAudioSession(story: StoryWith<'user'>) {
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: story.title!,
+      artist: `${story.user.name} & OpenAI`,
+      album: "Tonight's Bedtime Story",
+      artwork: [96, 128, 192, 256, 384, 512].map((size) => ({
+        src: createImageURL(story.image!, {
+          width: size,
+          height: size,
+          crop: true,
+        }).url,
+        sizes: `${size}x${size}`,
+        type: 'image/png',
+      })),
+    });
+  }
+}
+
 export default function () {
   const story = usePageData<typeof getPageData>();
   const ref = useRef<HTMLAudioElement>(null);
@@ -332,6 +365,10 @@ export default function () {
 
     ref.current?.addEventListener('play', handler);
     ref.current?.addEventListener('pause', handler);
+
+    if (story) {
+      setupAudioSession(story);
+    }
 
     return () => {
       ref.current?.removeEventListener('play', handler);

@@ -43,6 +43,17 @@ export default function boot() {
       return query;
     }
 
+    // Loading a related user for a story will need to be able to query by the id
+    if (query.length === 1) {
+      if (isOrConditionBlock(query[0])) {
+        throw new NotAuthorizedError();
+      }
+
+      if (query[0].id) {
+        return query;
+      }
+    }
+
     if (await isAdmin(userId)) {
       return query;
     }
