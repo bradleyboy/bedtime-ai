@@ -13,6 +13,7 @@ import { usePageData, Link } from '@nokkio/router';
 import { Story } from '@nokkio/magic';
 import { Img, createImageURL } from '@nokkio/image';
 import { useAuth } from '@nokkio/auth';
+import { makeRequest } from '@nokkio/endpoints';
 
 import Spinner from 'components/Spinner';
 import Footer from 'components/Footer';
@@ -112,7 +113,10 @@ function handleTogglePlayback(audio: HTMLAudioElement | null) {
 
 const AudioPlayer = forwardRef<
   HTMLAudioElement,
-  { story: Story; onTimeUpdate?: (t: number) => void }
+  {
+    story: Story;
+    onTimeUpdate?: (currentTime: number, totalTime: number) => void;
+  }
 >(function AudioPlayer({ story, onTimeUpdate }, forwardedRef) {
   const src = story.audio;
   const ref = useRef<HTMLAudioElement>(null);
@@ -129,7 +133,7 @@ const AudioPlayer = forwardRef<
       setCurrentTime(ref.current?.currentTime!);
 
       if (onTimeUpdate) {
-        onTimeUpdate(ref.current?.currentTime!);
+        onTimeUpdate(Math.round(ref.current?.currentTime!), story.duration!);
       }
     };
 
@@ -246,12 +250,76 @@ function AdminToolbar({ story }: { story: Story }) {
   );
 }
 
+function ShowRelatedStories({ story }: { story: Story }) {
+  const [relatedStories, setRelatedStories] = useState<Array<Story>>([]);
+
+  useEffect(() => {
+    let unmounted = false;
+
+    makeRequest(`/stories/${story.id}/related`)
+      .then((r) => {
+        if (r.ok) {
+          return r.json();
+        }
+      })
+      .then((r) => {
+        if (unmounted) {
+          return;
+        }
+
+        setRelatedStories(
+          r.relatedStories.map(
+            (r: Parameters<(typeof Story)['fromOutput']>[0]) =>
+              Story.fromOutput(r),
+          ),
+        );
+      });
+
+    return () => {
+      unmounted = true;
+    };
+  }, []);
+
+  if (relatedStories.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="absolute top-0 bottom-0 left-0 right-0 bg-gray-900 bg-opacity-75 flex flex-col items-center justify-center">
+      <div className="mb-6">More stories like this</div>
+      <div className="grid grid-col-1 md:grid-cols-2 gap-6">
+        {relatedStories.map((story, idx) => (
+          <Link
+            key={story.id}
+            to={`/stories/${story.id}`}
+            className={`relative flex flex-col bg-gray-900 w-[250px] rounded overflow-hidden border border-transparent hover:border-gray-600 transition-colors${
+              idx > 1 ? ' hidden md:block' : ''
+            }`}
+          >
+            <Img
+              image={story.image}
+              crop
+              className="saturate-50 hover:saturate-100 transition"
+            />
+            <div className="absolute bottom-0 left-0 right-0 bg-gray-900 px-3 py-4">
+              {story.title}
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function () {
   const story = usePageData<typeof getPageData>();
   const ref = useRef<HTMLAudioElement>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [showCopyPrompt, setShowCopyPrompt] = useState(false);
+  const [time, setTime] = useState<{
+    currentTime: number;
+    totalTime: number;
+  }>({ currentTime: 0, totalTime: 0 });
 
   useEffect(() => {
     const handler = () => {
@@ -303,23 +371,27 @@ export default function () {
             className="h-0 min-h-full object-contain"
           />
           <AdminToolbar story={story} />
-          {showCopyPrompt && (
-            <div className="absolute bottom-3">
-              <Link
-                to={`/stories/create?from=${story.id}`}
-                className="flex items-center space-x-1 text-sm p-3 text-gray-300 hover:text-gray-50 bg-gray-900 rounded-md"
-              >
-                <CopyIcon /> <span>Create new story based on this one</span>
-              </Link>
-            </div>
+          {time.totalTime > 0 && time.currentTime >= time.totalTime && (
+            <ShowRelatedStories story={story} />
           )}
+          {time.currentTime < time.totalTime &&
+            time.currentTime > time.totalTime * 0.3 && (
+              <div className="absolute bottom-3">
+                <Link
+                  to={`/stories/create?from=${story.id}`}
+                  className="flex items-center space-x-1 text-sm p-3 text-gray-300 hover:text-gray-50 bg-gray-900 rounded-md"
+                >
+                  <CopyIcon /> <span>Create new story based on this one</span>
+                </Link>
+              </div>
+            )}
         </div>
         <div>
           <AudioPlayer
             ref={ref}
             story={story}
-            onTimeUpdate={(t) => {
-              setShowCopyPrompt(t > 10);
+            onTimeUpdate={(currentTime, totalTime) => {
+              setTime({ currentTime, totalTime });
             }}
           />
         </div>

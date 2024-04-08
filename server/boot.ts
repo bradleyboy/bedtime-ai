@@ -11,6 +11,7 @@ import {
   generateImage,
   generateStory,
   generateAudio,
+  updateEmbeddingForStory,
 } from 'server/ai/tasks.ts';
 
 function getNextState(state: Story['state']): Story['state'] {
@@ -189,8 +190,22 @@ export default function boot() {
     });
   });
 
-  Story.afterUpdate(async (story) => {
-    if (story.state === 'ready' || story.state === 'failed') {
+  Story.afterUpdate(async (story, previousRecord) => {
+    if (story.state === 'failed') {
+      return;
+    }
+
+    if (story.state === 'ready') {
+      // We want to update the embeddings for two cases:
+      // 1. The story's isPublic state has changed, since that is part of the metadata in Pinecone
+      // 2. The story enters the "ready" state for the first time, which is when we create the
+      //    initial embedding.
+      if (
+        previousRecord.isPublic !== story.isPublic ||
+        previousRecord.state !== story.state
+      ) {
+        await updateEmbeddingForStory(story);
+      }
       return;
     }
 
