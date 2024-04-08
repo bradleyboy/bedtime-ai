@@ -167,6 +167,16 @@ const AudioPlayer = forwardRef<
           ref.current.currentTime += 10;
         }
       });
+      navigator.mediaSession.setActionHandler('play', function () {
+        if (ref.current) {
+          ref.current.play();
+        }
+      });
+      navigator.mediaSession.setActionHandler('pause', function () {
+        if (ref.current) {
+          ref.current.pause();
+        }
+      });
     }
 
     window.addEventListener('keydown', spaceHandler);
@@ -339,10 +349,11 @@ function setupAudioSession(story: StoryWith<'user'>) {
         src: createImageURL(story.image!, {
           width: size,
           height: size,
+          dpr: 2,
           crop: true,
         }).url,
         sizes: `${size}x${size}`,
-        type: 'image/png',
+        type: story.image!.type,
       })),
     });
   }
