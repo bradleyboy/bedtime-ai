@@ -109,6 +109,8 @@ export default function boot() {
       if (orQuery.$or.isPublic !== true || orQuery.$or.userId !== userId) {
         throw new NotAuthorizedError();
       }
+
+      return query;
     }
 
     if (await isAdmin(userId)) {
