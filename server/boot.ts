@@ -12,7 +12,7 @@ import {
   generateStory,
   generateAudio,
   updateEmbeddingForStory,
-} from 'server/ai/tasks.ts';
+} from 'server/ai/index.ts';
 
 function getNextState(state: Story['state']): Story['state'] {
   if (state === 'created') {

@@ -1,4 +1,4 @@
-import { findSimilarStories } from 'server/ai/tasks.ts';
+import { findSimilarStories } from 'server/ai/index.ts';
 import { Story } from '@nokkio/magic';
 import { NokkioRequest, json } from '@nokkio/endpoints';
 
