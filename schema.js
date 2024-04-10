@@ -10,7 +10,7 @@ module.exports = function ({ defineModel, types }) {
   });
 
   const Story = defineModel('Story', {
-    prompt: types.string(),
+    prompt: types.text(),
     state: types
       .string('created')
       .oneOf([
