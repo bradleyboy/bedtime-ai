@@ -1,5 +1,6 @@
-import OpenAI from 'npm:openai';
-import { Pinecone } from 'npm:@pinecone-database/pinecone';
+import OpenAI from 'npm:openai@^4.33';
+import { Pinecone } from 'npm:@pinecone-database/pinecone@^2.2';
+
 import process from 'node:process';
 
 import { Story } from '@nokkio/magic';
