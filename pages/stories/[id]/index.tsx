@@ -39,6 +39,7 @@ export const getPageMetadata: PageMetadataFunction<typeof getPageData> = ({
       description: `Tonight's Bedtime Story: ${
         pageData.summary ?? pageData.title
       }`,
+      ...(pageData.isPublic ? {} : { noindex: 'noindex' }),
     },
     openGraph: {
       image: createImageURL(pageData.image!),
