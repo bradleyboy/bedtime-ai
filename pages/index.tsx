@@ -56,7 +56,15 @@ export const getPageMetadata: PageMetadataFunction<typeof getPageData> = () => {
   };
 };
 
-function StoryImage({ story, crop = true }: { story: Story; crop?: boolean }) {
+function StoryImage({
+  loading,
+  story,
+  crop = true,
+}: {
+  loading?: 'lazy';
+  story: Story;
+  crop?: boolean;
+}) {
   const [loaded, setLoaded] = useState(false);
 
   return (
@@ -71,7 +79,12 @@ function StoryImage({ story, crop = true }: { story: Story; crop?: boolean }) {
         </div>
       )}
       {story.image && (
-        <Img onLoad={() => setLoaded(true)} image={story.image} crop={crop} />
+        <Img
+          loading={loading}
+          onLoad={() => setLoaded(true)}
+          image={story.image}
+          crop={crop}
+        />
       )}
       {loaded && story.isPublic === false && (
         <div className="absolute text-white top-6 right-6 bg-gray-800 px-3 py-1 text-sm bg-opacity-70">
@@ -131,7 +144,7 @@ export default function (): JSX.Element {
             .map((story) => (
               <div key={story.id} className="rounded-xl overflow-hidden">
                 <Link className="relative block" to={`/stories/${story.id}`}>
-                  <StoryImage story={story} />
+                  <StoryImage loading="lazy" story={story} />
                   <div className="absolute bottom-0 left-0 bg-gray-900 p-6 w-full space-y-1 opacity-95">
                     <div className="uppercase text-sm font-bold">
                       {story.title}
