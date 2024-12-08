@@ -265,7 +265,7 @@ export default function boot() {
       if (story.attempt === 3) {
         console.log('error processing story, giving up', {
           state: story.state,
-          error: e.message,
+          error: e instanceof Error ? e.message : 'unknown',
         });
 
         await story.update({
@@ -277,7 +277,7 @@ export default function boot() {
       console.log('error processing story, retrying', {
         state: story.state,
         attempt: story.attempt,
-        error: e.message,
+        error: e instanceof Error ? e.message : 'unknown',
       });
 
       await story.update({

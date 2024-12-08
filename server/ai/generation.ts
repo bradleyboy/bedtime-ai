@@ -80,7 +80,7 @@ export async function generateStory(story: Story) {
         content: story.prompt,
       },
     ],
-    model: 'gpt-4-turbo-preview',
+    model: 'gpt-4o',
     // Send the Nokkio user ID through per OpenAI's best practices
     // for safety: https://platform.openai.com/docs/guides/safety-best-practices/end-user-ids
     user: story.userId,

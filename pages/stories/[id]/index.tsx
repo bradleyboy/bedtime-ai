@@ -326,7 +326,7 @@ function ShowRelatedStories({ story }: { story: Story }) {
             className={`relative flex flex-col w-full md:w-[250px] text-sm md:text-base rounded overflow-hidden border border-transparent hover:border-gray-600 transition-colors`}
           >
             <Img
-              image={story.image}
+              image={story.image!}
               crop
               className="saturate-50 hover:saturate-100 transition"
             />
@@ -420,7 +420,7 @@ export default function () {
           <Img
             onLoad={() => setImageLoaded(true)}
             onClick={() => handleTogglePlayback(ref.current)}
-            image={story.image}
+            image={story.image!}
             className="h-0 min-h-full object-contain"
           />
           <AdminToolbar story={story} />
