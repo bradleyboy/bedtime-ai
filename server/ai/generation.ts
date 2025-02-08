@@ -1,5 +1,7 @@
 import { Story } from '@nokkio/magic';
 import { writeFile, writeImage } from '@nokkio/endpoints';
+import { z } from 'npm:zod';
+import { zodResponseFormat } from 'npm:openai@^4.83/helpers/zod';
 
 import { openai } from 'server/ai/clients.ts';
 
@@ -26,8 +28,6 @@ Finally, create an image prompt following these directions:
 - IMPORTANT: make sure the prompt results in an image that is appropriate for children.
 - Children can often spot an AI generated image, try to prevent that by keeping the image simple and not cluttering the scene up with too many concepts at once.
 - Return ONLY the prompt, do not include any text that is not part of the prompt.
-
-Once you have all this information, return it in a JSON string with the keys: title, story, summary, image_prompt. You MUST return valid JSON. Do NOT wrap the json output in \`\`\`json ... \`\`\`!
       `,
   },
   {
@@ -69,8 +69,15 @@ export async function generateStory(story: Story) {
     }
   }
 
-  const completion = await openai.chat.completions.create({
-    response_format: { type: 'json_object' },
+  const Output = z.object({
+    title: z.string(),
+    story: z.string(),
+    summary: z.string(),
+    image_prompt: z.string(),
+  });
+
+  const completion = await openai.beta.chat.completions.parse({
+    response_format: zodResponseFormat(Output, 'story'),
     seed,
     messages: [
       ...PROMPT_COMMON,
@@ -86,23 +93,13 @@ export async function generateStory(story: Story) {
     user: story.userId,
   });
 
-  const r = completion.choices[0].message.content;
+  const r = completion.choices[0].message.parsed;
 
   if (!r) {
     throw new Error('no response from API');
   }
 
-  try {
-    return JSON.parse(r) as {
-      title: string;
-      story: string;
-      summary: string;
-      image_prompt: string;
-    };
-  } catch (e) {
-    console.log('parsing JSON from OpenAI failed', r);
-    throw e;
-  }
+  return r;
 }
 
 export async function generateImage(story: Story) {
@@ -119,7 +116,7 @@ export async function generateImage(story: Story) {
   const url = image.data[0].url;
 
   if (!url) {
-    throw new Error('error generating imasge');
+    throw new Error('error generating image');
   }
 
   const r = await fetch(url);
@@ -151,7 +148,11 @@ export async function generateAudio(story: Story): Promise<string> {
     throw new Error('nope');
   }
 
-  const { path } = await writeFile(`${story.id}.mp3`, audio.body);
+  const { path } = await writeFile(
+    `${story.id}.mp3`,
+    // weird issue here with the openai types and deno /shrug
+    audio.body as unknown as ReadableStream,
+  );
 
   return path;
 }
