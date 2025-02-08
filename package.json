@@ -6,11 +6,12 @@
   "main": "index.js",
   "dependencies": {
     "@types/google.accounts": "^0.0.14",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "@types/react-dom": "^19.0.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@types/react": "^18.0.9",
+    "@types/react": "^19.0.8",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.21",
     "prettier-plugin-tailwindcss": "^0.2.5",
@@ -25,6 +26,6 @@
   "license": "UNLICENSED",
   "nokkio": {
     "id": "2ZdbUsho0QOFtHlBB87hOfYDqTc",
-    "version": "v0.0.0-7648a363-1714788757"
+    "version": "v0.0.0-49d6189e-1739044532"
   }
 }

@@ -1,5 +1,7 @@
 import { NOKKIO_CSP_NONCE, Html, Head, Body, DocumentProps } from '@nokkio/doc';
 
+import type { JSX } from "react";
+
 const gtagInit = `
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}

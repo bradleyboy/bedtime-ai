@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, KeyboardEventHandler } from 'react';
+import { useState, ChangeEvent, KeyboardEventHandler, type JSX } from 'react';
 
 import type { PageMetadataFunction } from '@nokkio/router';
 import { usePageData } from '@nokkio/router';

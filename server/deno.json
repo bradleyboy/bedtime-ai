@@ -1,3 +1,13 @@
 {
-  "importMap": "./node_modules/@nokkio/import_map.json"
+  "importMap": "node_modules/@nokkio/import_map.json",
+  "lint": {
+    "exclude": [
+      "bundle-*"
+    ]
+  },
+  "compilerOptions": {
+    "types": [
+      "./nokkio.d.ts"
+    ]
+  }
 }

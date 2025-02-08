@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type JSX } from 'react';
 
 import { usePageData, Link } from '@nokkio/router';
 import type { PageMetadataFunction, PageDataArgs } from '@nokkio/router';
