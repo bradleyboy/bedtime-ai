@@ -18,7 +18,9 @@ export default async function () {
     limit: 5,
   });
 
-  const history = recent.map((r) => r.text).join('\n');
+  const history = recent
+    .map((r) => `Title: ${r.title}\nStory: ${r.text}`)
+    .join('\n---\n');
 
   await user.createStory({
     prompt: `write a unique bedtime story. Here are the last 5 stories you created, the new story should not use the same characters, themes, or storylines: ${history}`,
